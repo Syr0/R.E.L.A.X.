@@ -1,0 +1,37 @@
+{
+  "regexPairs": [
+    {
+      "isActive": true,
+      "key": "Domains",
+      "regex": "([a-zA-Z0-9\\-\\.]+\\.(?:com|org|net|mil|edu|COM|ORG|NET|MIL|EDU))"
+    },
+    {
+      "isActive": true,
+      "key": "IP",
+      "regex": "((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))"
+    },
+    {
+      "isActive": true,
+      "key": "MD5",
+      "regex": "([a-fA-F0-9]{32})"
+    },
+    {
+      "isActive": true,
+      "key": "Date",
+      "regex": "((?:0[1-9]|[12][0-9]|3[01])[\\\\\\/\\.-](?:0[1-9]|1[012])[\\\\\\/\\.-](?:19|20|)\\d\\d)"
+    },
+    {
+      "isActive": true,
+      "key": "Quotes-DE",
+      "regex": "„([^\\\"]+){5,66}[\"|\"]"
+    },
+    {
+      "isActive": false,
+      "key": "Quotes-EN",
+      "regex": "\"([^\\\"]+){5,15}[\"|\"]"
+    }
+  ],
+  "ignoreLinks": true,
+  "ignoreURLs": false,
+  "defangURLs": true
+}

@@ -1,0 +1,27 @@
+.textarea-large {
+	width: 750px;
+	height: 220px;
+}
+.drag-handle {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	cursor: move !important;
+	margin-right: 10px;
+	position: relative;
+	z-index: 10;
+}
+.sortable-drag {
+	background-color: #f7f7f7;
+	border: 1px dashed #ccc;
+}
+.drag-handle:hover {
+	background-color: #f0f0f0;
+}
+.keyValueContainer {
+	gap: 10px;
+}
+.keyValueContainer > div {
+	gap: 10px;
+	align-items: center;
+}
