@@ -3,7 +3,7 @@
   <h1 align="center">R.E.L.A.X. (Regular Expression Link Analysis Xpert)
   <br>
   <a href="#"><img src="https://img.shields.io/badge/Supported-Absolutely-brightgreen"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Version-1.3.2-blue"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Version-1.3.3-blue"></a>
   <a href="#"><img src="https://img.shields.io/badge/Bug--Free-Flawless-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/ChatGPT-Approved-red"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-MIT-orange"></a></h1>
@@ -64,4 +64,4 @@ Big thanks to the Obsidian crew and all the brilliant minds behind this project.
 
 #### Support R.E.L.A.X.:
 
-Enjoying R.E.L.A.X.? [Buy me a coffee](https://buymeacoffee.com/Syr1) and keep the vibes going!
+Enjoying R.E.L.A.X.? [Why not buy me a coffee then?](https://buymeacoffee.com/Syr1) so I can relax even more!
