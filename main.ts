@@ -687,19 +687,27 @@ async onload() {
 	async addBracketsForFolder(folderPath: string) {
 		const files = this.app.vault.getMarkdownFiles().filter(file => file.path.startsWith(folderPath));
 		const totalFiles = files.length;
+		let processedFiles = 0;
 
 		let processingNotice = new Notice(`Processing ${totalFiles} files...`, totalFiles * 1000);
 
-		for (const [index, file] of files.entries()) {
-			await this.mutex.runExclusive(async () => {
-				await this.addBracketsForFile(file.path);
-				processingNotice.setMessage(`Processing file ${index + 1} of ${totalFiles}`);
-			});
-		}
+		const taskQueue = files.map(file => () => this.addBracketsForFile(file.path).then(() => {
+			processedFiles++;
+			processingNotice.setMessage(`Processing file ${processedFiles} of ${totalFiles}`);
+		}));
+
+		const processQueue = async () => {
+			if (taskQueue.length === 0) return;
+			await taskQueue.shift()();
+		};
+
+		const maxConcurrentTasks = 200;
+		const promises = Array(Math.min(maxConcurrentTasks, taskQueue.length)).fill(null).map(processQueue);
+
+		await Promise.all(promises);
 
 		processingNotice.hide();
 		new Notice(`All ${totalFiles} files in the folder processed.`);
 	}
-
 
 }
