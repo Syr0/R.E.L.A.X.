@@ -151,7 +151,7 @@ class RelaxSettingTab extends PluginSettingTab {
 
 				const activeCheckboxInput = row.querySelector('input[type="checkbox"]');
 				const keyInput = row.querySelector('input[placeholder="Description-Key"]');
-				const valueInput = row.querySelector('input[placeholder="RegExp"]');
+				const valueInput = row.querySelector('input[placeholder="Regexp"]');
 
 
 				if (keyInput && valueInput && activeCheckboxInput) {
