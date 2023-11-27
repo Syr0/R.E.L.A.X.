@@ -1,16 +1,90 @@
 import {App, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile} from 'obsidian';
 
 interface RelaxPluginSettings {
-	regexPairs: Array<{isActive: boolean, key: string, regex: string,  }>;
+	regexPairs: Array<{ isActive: boolean, key: string, regex: string, }>;
 	ignoreLinks?: boolean;
 	ignoreURLs?: boolean;
 	defangURLs?: boolean;
 }
+
 const DEFAULT_SETTINGS: RelaxPluginSettings = {
-	regexPairs: [],
+	"regexPairs": [
+		{
+			"isActive": true,
+			"key": "Domains",
+			"regex": "([a-zA-Z0-9\\-\\.]+\\.(?:com|org|net|mil|edu|COM|ORG|NET|MIL|EDU))"
+		},
+		{
+			"isActive": true,
+			"key": "IP",
+			"regex": "((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))"
+		},
+		{
+			"isActive": true,
+			"key": "eMail",
+			"regex": "([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,})"
+		},
+		{
+			"isActive": true,
+			"key": "GUID",
+			"regex": "([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})"
+		},
+		{
+			"isActive": true,
+			"key": "SHA256",
+			"regex": "([a-fA-F0-9]{64})"
+		},
+		{
+			"isActive": true,
+			"key": "JARM",
+			"regex": "([a-fA-F0-9]{62})"
+		},
+		{
+			"isActive": true,
+			"key": "SHA1",
+			"regex": "([a-fA-F0-9]{40})"
+		},
+		{
+			"isActive": true,
+			"key": "MD5",
+			"regex": "([a-fA-F0-9]{32})"
+		},
+		{
+			"isActive": true,
+			"key": "Bitcoin",
+			"regex": "([13]{1}[a-km-zA-HJ-NP-Z1-9]{26,33}|bc1[a-z0-9]{39,59})"
+		},
+		{
+			"isActive": true,
+			"key": "Date",
+			"regex": "((?:0[1-9]|[12][0-9]|3[01])[\\\\\\/\\.-](?:0[1-9]|1[012])[\\\\\\/\\.-](?:19|20|)\\d\\d)"
+		},
+		{
+			"isActive": true,
+			"key": "Windows Usernames",
+			"regex": "\\\\Users\\\\+(?!(?:Public|Administrator)\\\\)([^\\\\]+)\\\\"
+		},
+		{
+			"isActive": true,
+			"key": "Quotes-DE",
+			"regex": "„([^\\\"]+){5,66}[\"|\"]"
+		},
+		{
+			"isActive": false,
+			"key": "Quotes-EN",
+			"regex": "\"([^\\\"]+){5,15}[\"|\"]"
+		},
+		{
+			"isActive": false,
+			"key": "Log-File Entry",
+			"regex": "\\d{2}:\\d{2}:\\d{2} (.+?)(?=\\s\\d{2}:\\d{2}:\\d{2}|$)"
+		}
+	],
 	ignoreLinks: true,
-	ignoreURLs: true
+	ignoreURLs: false,
+	defangURLs: true
 };
+
 class Mutex {
 	private _promise: Promise<void> | null = null;
 	private _resolve: (() => void) | null = null;
@@ -43,16 +117,19 @@ class Mutex {
 class RelaxSettingTab extends PluginSettingTab {
 	plugin: RelaxPlugin;
 	keyValueContainer: HTMLDivElement;
+
 	constructor(app: App, plugin: RelaxPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
+
 	display() {
-		const { containerEl } = this;
+		const {containerEl} = this;
 		containerEl.empty();
 		const keyValueContainer = containerEl.createEl("div");
 		keyValueContainer.style.display = 'flex';
 		keyValueContainer.style.flexDirection = 'column';
+
 		function validateContent(content) {
 			const regex = /\[\[(.+?)\]\]/g;
 			return !regex.test(content);
@@ -71,13 +148,13 @@ class RelaxSettingTab extends PluginSettingTab {
 		document.addEventListener('DOMContentLoaded', (event) => {
 			const modalButton = document.querySelector("#openModalButton");
 
-			modalButton.addEventListener('click', function() {
+			modalButton.addEventListener('click', function () {
 				const modal = document.querySelector(".modal");
 				const textarea = modal.querySelector("textarea");
 
 				applyValidationStyle(textarea);
 
-				textarea.addEventListener('input', function() {
+				textarea.addEventListener('input', function () {
 					applyValidationStyle(textarea);
 				});
 			});
@@ -114,18 +191,18 @@ class RelaxSettingTab extends PluginSettingTab {
 			row.style.display = 'flex';
 			row.style.alignItems = 'center';
 
-			const dragHandle = row.createEl("span", { className: "drag-handle", text: "☰" });
-			const activeCheckbox = row.createEl("input", { className: "active-checkbox" });
+			const dragHandle = row.createEl("span", {className: "drag-handle", text: "☰"});
+			const activeCheckbox = row.createEl("input", {className: "active-checkbox"});
 			activeCheckbox.type = "checkbox";
 			activeCheckbox.checked = isActive;
 			row.appendChild(activeCheckbox);
 
-			const keyInput = row.createEl("input", { className: "key-input", placeholder: "Description-Key", value: key ?? '' });
-			const valueInput = row.createEl("input", { className: "value-input", placeholder: "Regexp", value: value ?? '' });
+			const keyInput = row.createEl("input", {className: "key-input", placeholder: "Description-Key", value: key ?? ''});
+			const valueInput = row.createEl("input", {className: "value-input", placeholder: "Regexp", value: value ?? ''});
 			keyInput.style.marginRight = '10px';
 			valueInput.style.marginRight = '10px';
 
-			row.createEl("button", { text: "Delete", className: `delete-button-${key ?? Date.now()}` })
+			row.createEl("button", {text: "Delete", className: `delete-button-${key ?? Date.now()}`})
 				.addEventListener("click", () => {
 					row.remove();
 					updateRegexOrderFromDOM.call(this);
@@ -135,15 +212,16 @@ class RelaxSettingTab extends PluginSettingTab {
 			valueInput.addEventListener('input', () => validateRegexInput(valueInput));
 		};
 
-		containerEl.createEl("button", { text: "Add Regexp" }).addEventListener("click", () => addKeyValue());
+		containerEl.createEl("button", {text: "Add Regexp"}).addEventListener("click", () => addKeyValue());
 
-		for (const {isActive, key, regex } of this.plugin.settings.regexPairs) {
+		for (const {isActive, key, regex} of this.plugin.settings.regexPairs) {
 			addKeyValue(key, regex, isActive);
 		}
 
 		let startY = 0;
 		let startTop = 0;
 		let initialOffsetY = 0
+
 		function updateRegexOrderFromDOM(pluginObj) {
 
 			const regexPairs = [];
@@ -158,7 +236,7 @@ class RelaxSettingTab extends PluginSettingTab {
 					const key = keyInput.value;
 					const value = valueInput.value;
 					const isActive = activeCheckboxInput.checked;
-					regexPairs.push({ isActive, key, regex: value });
+					regexPairs.push({isActive, key, regex: value});
 				}
 			});
 			if (pluginObj.plugin && pluginObj.plugin.settings) {
@@ -169,6 +247,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			}
 
 		}
+
 		let dragElement = null;
 		let currentIndex = null;
 		let newIndex = null;
@@ -180,7 +259,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				return;
 			}
 
-			dragHandle.addEventListener('mousedown', function(e) {
+			dragHandle.addEventListener('mousedown', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
 
@@ -294,24 +373,56 @@ class RelaxSettingTab extends PluginSettingTab {
 						}
 					});
 			});
+		new Setting(containerEl)
+			.setName("Reset Defaults")
+			.addButton(button => {
+				button.setButtonText("Reset")
+					.onClick(() => {
+						const resetConfirm = confirm("Are you sure you want to reset to default settings?");
+						if (resetConfirm) {
+							this.resetToDefaults();
+
+							if (this.plugin._settingTabReference) {
+								this.plugin._settingTabReference.display();
+							}
+							new Notice('Settings have been reset to defaults.');
+						}
+					});
+			});
+	}
+
+	async resetToDefaults() {
+		this.plugin.settings = DEFAULT_SETTINGS;
+
+		// Speichern der Standardwerte
+		await this.plugin.saveSettings();
+
+		new Notice('Settings have been reset to defaults.');
 	}
 }
-function containsValidLink(line: string, match: string): boolean {
-	const linkRegex = /\[\[.*?\]\]/g;
-	let result;
-	while ((result = linkRegex.exec(line)) !== null) {
-		if (result.index <= line.indexOf(match) && linkRegex.lastIndex >= line.indexOf(match) + match.length) {
-			return true;
+	function containsValidLink(line: string, match: string): boolean {
+		const linkRegex = /\[\[.*?\]\]/g;
+		let result;
+		while ((result = linkRegex.exec(line)) !== null) {
+			if (result.index <= line.indexOf(match) && linkRegex.lastIndex >= line.indexOf(match) + match.length) {
+				return true;
+			}
 		}
+		return false;
 	}
-	return false;
-}
 
 export default class RelaxPlugin extends Plugin {
 	settings: RelaxPluginSettings;
-	async onload() {
+	_settingTabReference: RelaxSettingTab;
+
+
+
+async onload() {
 		await this.loadSettings();
-		this.addSettingTab(new RelaxSettingTab(this.app, this));
+
+		this._settingTabReference = new RelaxSettingTab(this.app, this);
+
+		this.addSettingTab(this._settingTabReference);
 		this.addCommand({id: 'Relax-command', name: 'Relax', callback: () => this.addBrackets()});
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
@@ -350,11 +461,30 @@ export default class RelaxPlugin extends Plugin {
 			})
 		);
 	}
+
+	async resetToDefaults() {
+		this.settings = DEFAULT_SETTINGS;
+		await this.saveSettings();
+		new Notice('Settings have been reset to defaults.');
+	}
+
+	async loadSettings() {
+		try {
+			const loadedSettings = await this.loadData();
+			if (loadedSettings) {
+				this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedSettings);
+			} else {
+				throw new Error("No settings loaded");
+			}
+		} catch (e) {
+			await this.resetToDefaults();
+		}
+	}
+
 	onunload() {
 	}
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
+
+
 	async saveSettings() {
 		await this.saveData(this.settings);
 		new Notice('Config saved!');
@@ -424,7 +554,7 @@ export default class RelaxPlugin extends Plugin {
 		const lines = content.split("\n");
 
 		lines.forEach((line, index) => {
-			for (const { isActive,key, regex } of settings.regexPairs) {
+			for (const {isActive, key, regex} of settings.regexPairs) {
 				if (!isActive) {
 					continue;
 				}
@@ -501,7 +631,7 @@ export default class RelaxPlugin extends Plugin {
 				if (action === 'removeBrackets') {
 					await this.removeBracketsinFile();
 					new Notice('Removed brackets from entire file!');
-				} else { 
+				} else {
 					await this.addBracketsForFile();
 					new Notice('Added brackets on entire file!');
 				}
@@ -558,7 +688,7 @@ export default class RelaxPlugin extends Plugin {
 		const files = this.app.vault.getMarkdownFiles().filter(file => file.path.startsWith(folderPath));
 		const totalFiles = files.length;
 
-		let processingNotice = new Notice(`Processing ${totalFiles} files...`,totalFiles*1000);
+		let processingNotice = new Notice(`Processing ${totalFiles} files...`, totalFiles * 1000);
 
 		for (const [index, file] of files.entries()) {
 			await this.mutex.runExclusive(async () => {
@@ -570,4 +700,6 @@ export default class RelaxPlugin extends Plugin {
 		processingNotice.hide();
 		new Notice(`All ${totalFiles} files in the folder processed.`);
 	}
+
+
 }
