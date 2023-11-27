@@ -66,19 +66,126 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		},
 		{
 			"isActive": true,
+			"key": "Markdown-Italic",
+			"regex": "(?:[´'`‘’](((?:(?!<br>|\\r|\\n)[^´’‘'` ]){4,30}))[´’‘'`]|(?:[\"“]((?:(?!<br>|\\r|\\n)[^\"”]){4,50})[\"”])|(?:_((?:(?!<br>|\\r|\\n)[^_]){4,50})_))"
+		},
+		{
+			"isActive": true,
 			"key": "Quotes-DE",
 			"regex": "„([^\\\"]+){5,66}[\"|\"]"
 		},
 		{
-			"isActive": false,
-			"key": "Quotes-EN",
-			"regex": "\"([^\\\"]+){5,15}[\"|\"]"
+			"isActive": true,
+			"key": "Windows Forensics",
+			"regex": "([\\w]+.(?:bat|ps1|dll|exe|reg))[\\b]"
+		},
+		{
+			"isActive": true,
+			"key": "Linux Forensics",
+			"regex": "([\\w]+\\.(?:sh|so|conf|tar.gz))[\\b]"
+		},
+		{
+			"isActive": true,
+			"key": "Mac Forensics",
+			"regex": "([\\w]+\\.(?:app|pkg|dmg))[\\b]"
+		},
+		{
+			"isActive": true,
+			"key": "Signal Frequencies",
+			"regex": "(\\b[0-9]{1,4}(?:\\.\\d{1,4})?\\s?(Hz|kHz|MHz|GHz)\\b)"
+		},
+		{
+			"isActive": true,
+			"key": "BibTeX Entries",
+			"regex": "@(article|book|inbook|conference|inproceedings){([^}]+)}"
+		},
+		{
+			"isActive": true,
+			"key": "GPS Coordinates",
+			"regex": "\\b[+-]?[0-9]{1,2}\\.[0-9]+,\\s*[+-]?[0-9]{1,3}\\.[0-9]+\\b"
+		},
+		{
+			"isActive": true,
+			"key": "ISBN Numbers",
+			"regex": "\\bISBN\\s?(?:-?13|-10)?:?\\s?[0-9-]{10,17}\\b"
+		},
+		{
+			"isActive": true,
+			"key": "Camera Settings",
+			"regex": "\\bISO\\s?[0-9]+|f/[0-9.]+|1/[0-9]+\\s?sec\\b"
+		},
+		{
+			"isActive": true,
+			"key": "Historical Dates",
+			"regex": "\\b(?:[0-9]{1,4} (AD|BC)|[0-9]{1,4}th century)\\b"
+		},
+		{
+			"isActive": true,
+			"key": "Processor Specs",
+			"regex": "\\bIntel Core i[3579]-[0-9]{4}[HQGU]K?|AMD Ryzen [3579] [0-9]{4}X?\\b"
+		},
+		{
+			"isActive": true,
+			"key": "Chord Progressions",
+			"regex": "\\b((?:C|Dm|Em|F|G|Am|Bdim)(?:\\s->\\s(?:C|Dm|Em|F|G|Am|Bdim))*)\\b"
+		},
+		{
+			"isActive": true,
+			"key": "Images",
+			"regex": "([\\w]+\\.(?:jpg|jpeg|png|gif|bmp|tiff))[\\b]"
+		},
+		{
+			"isActive": true,
+			"key": "Movies",
+			"regex": "([\\w]+\\.(?:mp4|avi|mkv|mov|wmv))[\\b]"
+		},
+		{
+			"isActive": true,
+			"key": "Audio",
+			"regex": "([\\w]+\\.(?:mp3|wav|aac|flac))[\\b]"
 		},
 		{
 			"isActive": false,
-			"key": "Log-File Entry",
-			"regex": "\\d{2}:\\d{2}:\\d{2} (.+?)(?=\\s\\d{2}:\\d{2}:\\d{2}|$)"
+			"key": "Harmless Files",
+			"regex": "([\\w]+\\.(?:txt|asc|csv|log|md))[\\b]"
+		},
+		{
+			"isActive": false,
+			"key": "Base64 Strings",
+			"regex": "([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?"
+		},
+		{
+			"isActive": false,
+			"key": "Script Language File",
+			"regex": "([\\w]+\\.(?:py|js|java|cs|cpp|rb|go|php))[\\b]"
+		},
+		{
+			"isActive": false,
+			"key": "Hex Colors",
+			"regex": "#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})"
+		},
+		{
+			"isActive": false,
+			"key": "Chemical Elements",
+			"regex": "\\b(?:H|He|Li|Be|B|C|N|O|F|Ne|Na|Mg|Al|Si|P|S|Cl|Ar|K|Ca)\\b"
+		},
+		{
+			"isActive": false,
+			"key": "Social Media Hashtags",
+			"regex": "#[A-Za-z0-9_]+"
+		},
+		{
+			"isActive": false,
+			"key": "Academic Citations",
+			"regex": "\\b\\([A-Za-z]+,\\s[0-9]{4}\\)\\b"
+		},
+		{
+			"isActive": false,
+			"key": "Temperature Readings",
+			"regex": "\\b-?[0-9]+\\s?(°C|°F|K)\\b"
 		}
+
+
 	],
 	ignoreLinks: true,
 	ignoreURLs: false,
