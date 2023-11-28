@@ -66,7 +66,7 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 			"regex": "\\\\Users\\\\+(?!(?:Public|Administrator)\\\\)([^\\\\]+)\\\\"
 		},
 		{
-			"isActive": false,
+			"isActive": true,
 			"key": "Markdown-Italic",
 			"regex": "(?:[´'‘’](((?:(?!<br>|\\r|\\n)[^´’‘' ]){4,30}))[´’‘']|(?:[\"“]((?:(?!<br>|\\r|\\n)[^\"”]){4,50})[\"”])|(?:[_]((?:(?!<br>|\\r|\\n)[^_]){4,50})[_]))"
 		},
