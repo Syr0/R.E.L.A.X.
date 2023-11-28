@@ -225,21 +225,21 @@ class RelaxSettingTab extends PluginSettingTab {
 	plugin: RelaxPlugin;
 	keyValueContainer: HTMLDivElement;
 	saveButton: HTMLButtonElement;
-	isDirty: boolean = false;
+	isHighlited: boolean = false;
 
 	constructor(app: App, plugin: RelaxPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
-	setDirty(dirty: boolean) {
-		this.isDirty = dirty;
+	setHighlighted(highlight: boolean) {
+		this.isHighlited = highlight;
 		if (this.saveButton) {
-			this.saveButton.disabled = !dirty;
-			if (dirty) {
-				this.saveButton.classList.add('is-dirty');
+			this.saveButton.disabled = !highlight;
+			if (highlight) {
+				this.saveButton.classList.add('is-highlight');
 			} else {
-				this.saveButton.classList.remove('is-dirty');
+				this.saveButton.classList.remove('is-highlight');
 			}
 		}
 	}
@@ -506,12 +506,12 @@ class RelaxSettingTab extends PluginSettingTab {
 						if (closeButton) {
 							closeButton.click();
 						}
-						this.setDirty(false);
+						this.setHighlighted(false);
 					})
 					.setTooltip("Changes are stored to Vault/.obsidian/plugins/data.json");
 
 				this.saveButton = button.buttonEl;
-				this.setDirty(false);
+				this.setHighlighted(false);
 			});
 		new Setting(containerEl)
 			.setName("Reset Defaults")
@@ -529,9 +529,9 @@ class RelaxSettingTab extends PluginSettingTab {
 						}
 					});
 			});
-		const updateDirtyState = () => this.setDirty(true);
-		keyValueContainer.addEventListener('input', updateDirtyState);
-		keyValueContainer.addEventListener('change', updateDirtyState);
+		const updateHighlitedState = () => this.setHighlighted(true);
+		keyValueContainer.addEventListener('input', updateHighlitedState);
+		keyValueContainer.addEventListener('change', updateHighlitedState);
 	}
 
 	async resetToDefaults() {
@@ -601,7 +601,7 @@ async onload() {
 		);
 		this.registerEvent(this.app.workspace.on("settings:opened", () => {
 		if (this._settingTabReference) {
-			this._settingTabReference.setDirty(false);
+			this._settingTabReference.setHighlighted(false);
 		}
 	}));
 	}
