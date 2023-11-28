@@ -437,7 +437,6 @@ class RelaxSettingTab extends PluginSettingTab {
 				row.style.top = '';
 			});
 		}
-
 		new Setting(containerEl)
 			.setName('Ignore Links')
 			.addToggle(toggle => {
@@ -446,7 +445,9 @@ class RelaxSettingTab extends PluginSettingTab {
 					.onChange(async value => {
 						this.plugin.settings.ignoreLinks = value;
 						await this.plugin.saveSettings();
-					});
+					})
+					.setTooltip("Do not modify Links, preventing to handle the same data over and over again.")
+				;
 			});
 		new Setting(containerEl)
 			.setName('Ignore URLs')
@@ -456,7 +457,9 @@ class RelaxSettingTab extends PluginSettingTab {
 					.onChange(async value => {
 						this.plugin.settings.ignoreURLs = value;
 						await this.plugin.saveSettings();
-					});
+					})
+					.setTooltip("Do not modify URLs, so they do keep working.")
+				;
 			});
 		new Setting(containerEl)
 			.setName('Defang URLs')
@@ -466,7 +469,9 @@ class RelaxSettingTab extends PluginSettingTab {
 					.onChange(async value => {
 						this.plugin.settings.defangURLs = value;
 						await this.plugin.saveSettings();
-					});
+					})
+					.setTooltip("https[:]// -> https://")
+				;
 			});
 		new Setting(containerEl)
 			.setName("Save")
@@ -478,7 +483,9 @@ class RelaxSettingTab extends PluginSettingTab {
 						if (closeButton) {
 							closeButton.click();
 						}
-					});
+					})
+					.setTooltip("Changes are stored to Vault/.obsidian/plugins/data.json")
+				;
 			});
 		new Setting(containerEl)
 			.setName("Reset Defaults")
