@@ -509,8 +509,6 @@ class RelaxSettingTab extends PluginSettingTab {
 						this.setHighlighted(false);
 					})
 					.setTooltip("Changes are stored to Vault/.obsidian/plugins/data.json");
-
-				this.saveButton = button.buttonEl;
 				this.setHighlighted(false);
 			});
 		new Setting(containerEl)
