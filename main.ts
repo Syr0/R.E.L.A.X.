@@ -192,35 +192,6 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 	ignoreURLs: false
 };
 
-class Mutex {
-	private _promise: Promise<void> | null = null;
-	private _resolve: (() => void) | null = null;
-
-	async lock() {
-		if (this._promise) await this._promise;
-		this._promise = new Promise((resolve) => {
-			this._resolve = resolve;
-		});
-	}
-
-	unlock() {
-		if (this._resolve) {
-			this._resolve();
-			this._resolve = null;
-			this._promise = null;
-		}
-	}
-
-	async runExclusive<T>(callback: () => Promise<T>): Promise<T> {
-		await this.lock();
-		try {
-			return await callback();
-		} finally {
-			this.unlock();
-		}
-	}
-}
-
 class RelaxSettingTab extends PluginSettingTab {
 	plugin: RelaxPlugin;
 	keyValueContainer: HTMLDivElement;
@@ -842,7 +813,6 @@ async onload() {
 
 
 	private progress = 0;
-	private mutex = new Mutex();
 
 	async addBracketsForFolder(folderPath: string) {
 		const files = this.app.vault.getMarkdownFiles().filter(file => file.path.startsWith(folderPath));
