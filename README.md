@@ -41,7 +41,7 @@ Embrace a workflow that's as chilled out as a lazy Sunday afternoon. Discover co
 7. **Start Using the Plugin:** Begin your seamless Obsidian experience.
 
 ## Screenshots:
-<img src="Screenshot_1.bmp" alt="R.E.L.A.X Screenshot">
+<img src="Screenshot_1.png" alt="R.E.L.A.X Screenshot">
 <img src="Screenshot_2.bmp" alt="R.E.L.A.X Screenshot">
 <img src="Screenshot_3.bmp" alt="R.E.L.A.X Screenshot">
 
