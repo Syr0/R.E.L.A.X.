@@ -254,7 +254,7 @@ class RelaxSettingTab extends PluginSettingTab {
 		const validateRegexInput = (input: HTMLInputElement) => {
 			let errorMsg = "";
 			try {
-				//let reg = new RegExp(input.value);
+				const reg = new RegExp(input.value);
 				const groupCount = (input.value.match(/\((?!\?)/g) || []).length;
 				if (groupCount > 1) {
 					input.style.border = "2px solid red";
