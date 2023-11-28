@@ -634,7 +634,7 @@ async onload() {
 	}
 
 	removeBracketsInSelection(content: string): string {
-		return content.replace(/\[|\]/g, '');
+		return content.replace(/(?<!\!\[)\[|\](?!\])/g, '');
 	}
 
 	async addBracketsForFile(noteFilePath = "") {
