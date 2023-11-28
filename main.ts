@@ -197,10 +197,42 @@ class RelaxSettingTab extends PluginSettingTab {
 	keyValueContainer: HTMLDivElement;
 	saveButton: HTMLButtonElement;
 	isHighlited = false;
+	private updateRegexOrderFromDOM: () => void;
+	private saveChanges: () => void;
 
 	constructor(app: App, plugin: RelaxPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+
+		this.updateRegexOrderFromDOM = () => {
+			const regexPairs = [];
+			this.keyValueContainer.querySelectorAll("div").forEach(row => {
+				const activeCheckboxInput = row.querySelector("input[type='checkbox']");
+				const keyInput = row.querySelector("input[placeholder='Description-Key']");
+				const valueInput = row.querySelector("input[placeholder='Regexp']");
+				if (keyInput && valueInput && activeCheckboxInput) {
+					const key = keyInput.value;
+					const value = valueInput.value;
+					const isActive = activeCheckboxInput.checked;
+					regexPairs.push({isActive, key, regex: value});
+				}
+			});
+			if (this.plugin && this.plugin.settings) {
+				this.plugin.settings.regexPairs = regexPairs;
+				this.plugin.saveSettings();
+			} else {
+				console.error("Plugin or settings not available");
+			}
+		};
+
+		this.saveChanges = () => {
+			this.updateRegexOrderFromDOM();
+			const closeButton = document.querySelector(".modal-close-button");
+			if (closeButton) {
+				closeButton.click();
+			}
+			this.setHighlighted(false);
+		};
 	}
 
 	setHighlighted(highlight: boolean) {
@@ -217,9 +249,9 @@ class RelaxSettingTab extends PluginSettingTab {
 	display() {
 		const {containerEl} = this;
 		containerEl.empty();
-		const keyValueContainer = containerEl.createEl("div");
-		keyValueContainer.style.display = "flex";
-		keyValueContainer.style.flexDirection = "column";
+		this.keyValueContainer = containerEl.createEl("div");
+		this.keyValueContainer.style.display = "flex";
+		this.keyValueContainer.style.flexDirection = "column";
 
 		function validateContent(content) {
 			const regex = /\[\[(.+?)\]\]/g;
@@ -278,7 +310,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			}
 		};
 		const addKeyValue = (key?: string, value?: string, isActive = false) => {
-			const row = keyValueContainer.createEl("div");
+			const row = this.keyValueContainer.createEl("div");
 			row.style.display = "flex";
 			row.style.alignItems = "center";
 			row.style.justifyContent = "space-between"; // Add space between items
@@ -302,7 +334,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			row.createEl("button", {text: "Delete", className: `delete-button-${key ?? Date.now()}`})
 				.addEventListener("click", () => {
 					row.remove();
-					updateRegexOrderFromDOM.call(this);
+					this.updateRegexOrderFromDOM.call(this);
 				});
 
 			if (dragHandle) makeDraggable(row, dragHandle);
@@ -319,30 +351,6 @@ class RelaxSettingTab extends PluginSettingTab {
 		const startTop = 0;
 		let initialOffsetY = 0
 
-		function updateRegexOrderFromDOM(pluginObj) {
-
-			const regexPairs = [];
-			keyValueContainer.querySelectorAll("div").forEach(row => {
-
-				const activeCheckboxInput = row.querySelector("input[type='checkbox']");
-				const keyInput = row.querySelector("input[placeholder='Description-Key']");
-				const valueInput = row.querySelector("input[placeholder='Regexp']");
-
-
-				if (keyInput && valueInput && activeCheckboxInput) {
-					const key = keyInput.value;
-					const value = valueInput.value;
-					const isActive = activeCheckboxInput.checked;
-					regexPairs.push({isActive, key, regex: value});
-				}
-			});
-			if (pluginObj.plugin && pluginObj.plugin.settings) {
-				pluginObj.plugin.settings.regexPairs = regexPairs;
-				pluginObj.plugin.saveSettings();
-			} else {
-				console.error("Plugin or settings not available");
-			}
-		}
 
 		let dragElement = null;
 		let currentIndex = null;
@@ -478,17 +486,16 @@ class RelaxSettingTab extends PluginSettingTab {
 			.addButton(button => {
 				button.setButtonText("Save")
 					.onClick(() => {
-						updateRegexOrderFromDOM(this)
-						const closeButton = document.querySelector(".modal-close-button");
-						if (closeButton) {
-							closeButton.click();
-						}
-						this.setHighlighted(false);
-					})
-					.setTooltip("Changes are stored to Vault/.obsidian/plugins/data.json");
+						this.saveChanges();
+					});
 				this.saveButton = button.buttonEl;
-				this.setHighlighted(false);
 			});
+
+		const updateHighlightedState = () => this.setHighlighted(true);
+		this.keyValueContainer.addEventListener("input", updateHighlightedState);
+		this.keyValueContainer.addEventListener("change", updateHighlightedState);
+
+
 		new Setting(containerEl)
 			.setName("Reset Defaults")
 			.addButton(button => {
@@ -506,8 +513,8 @@ class RelaxSettingTab extends PluginSettingTab {
 					});
 			});
 		const updateHighlitedState = () => this.setHighlighted(true);
-		keyValueContainer.addEventListener("input", updateHighlitedState);
-		keyValueContainer.addEventListener("change", updateHighlitedState);
+		this.keyValueContainer.addEventListener("input", updateHighlitedState);
+		this.keyValueContainer.addEventListener("change", updateHighlitedState);
 	}
 
 	async resetToDefaults() {
