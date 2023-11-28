@@ -310,6 +310,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			const row = keyValueContainer.createEl("div");
 			row.style.display = 'flex';
 			row.style.alignItems = 'center';
+			row.style.justifyContent = 'space-between'; // Add space between items
 
 			const dragHandle = row.createEl("span", {className: "drag-handle", text: "☰"});
 			const activeCheckbox = row.createEl("input", {className: "active-checkbox"});
@@ -317,9 +318,14 @@ class RelaxSettingTab extends PluginSettingTab {
 			activeCheckbox.checked = isActive;
 			row.appendChild(activeCheckbox);
 
+// Key input
 			const keyInput = row.createEl("input", {className: "key-input", placeholder: "Description-Key", value: key ?? ''});
-			const valueInput = row.createEl("input", {className: "value-input", placeholder: "Regexp", value: value ?? ''});
+			keyInput.style.flex = '1'; // Allow this to grow
 			keyInput.style.marginRight = '10px';
+
+// Value input
+			const valueInput = row.createEl("input", {className: "value-input", placeholder: "Regexp", value: value ?? ''});
+			valueInput.style.flex = '2'; // Allow this to grow more than the key input
 			valueInput.style.marginRight = '10px';
 
 			row.createEl("button", {text: "Delete", className: `delete-button-${key ?? Date.now()}`})
