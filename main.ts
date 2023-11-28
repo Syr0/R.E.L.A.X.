@@ -224,12 +224,25 @@ class Mutex {
 class RelaxSettingTab extends PluginSettingTab {
 	plugin: RelaxPlugin;
 	keyValueContainer: HTMLDivElement;
+	saveButton: HTMLButtonElement;
+	isDirty: boolean = false;
 
 	constructor(app: App, plugin: RelaxPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
+	setDirty(dirty: boolean) {
+		this.isDirty = dirty;
+		if (this.saveButton) {
+			this.saveButton.disabled = !dirty;
+			if (dirty) {
+				this.saveButton.classList.add('is-dirty');
+			} else {
+				this.saveButton.classList.remove('is-dirty');
+			}
+		}
+	}
 	display() {
 		const {containerEl} = this;
 		containerEl.empty();
@@ -473,7 +486,7 @@ class RelaxSettingTab extends PluginSettingTab {
 					.setTooltip("https[:]// -> https://")
 				;
 			});
-		new Setting(containerEl)
+		const saveButtonSetting = new Setting(containerEl)
 			.setName("Save")
 			.addButton(button => {
 				button.setButtonText("Save")
@@ -483,9 +496,12 @@ class RelaxSettingTab extends PluginSettingTab {
 						if (closeButton) {
 							closeButton.click();
 						}
+						this.setDirty(false);
 					})
-					.setTooltip("Changes are stored to Vault/.obsidian/plugins/data.json")
-				;
+					.setTooltip("Changes are stored to Vault/.obsidian/plugins/data.json");
+
+				this.saveButton = button.buttonEl;
+				this.setDirty(false);
 			});
 		new Setting(containerEl)
 			.setName("Reset Defaults")
@@ -503,6 +519,9 @@ class RelaxSettingTab extends PluginSettingTab {
 						}
 					});
 			});
+		const updateDirtyState = () => this.setDirty(true);
+		keyValueContainer.addEventListener('input', updateDirtyState);
+		keyValueContainer.addEventListener('change', updateDirtyState);
 	}
 
 	async resetToDefaults() {
@@ -528,8 +547,6 @@ class RelaxSettingTab extends PluginSettingTab {
 export default class RelaxPlugin extends Plugin {
 	settings: RelaxPluginSettings;
 	_settingTabReference: RelaxSettingTab;
-
-
 
 async onload() {
 		await this.loadSettings();
@@ -574,6 +591,11 @@ async onload() {
 				});
 			})
 		);
+		this.registerEvent(this.app.workspace.on("settings:opened", () => {
+		if (this._settingTabReference) {
+			this._settingTabReference.setDirty(false);
+		}
+	}));
 	}
 
 	async resetToDefaults() {
