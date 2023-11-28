@@ -208,9 +208,9 @@ class RelaxSettingTab extends PluginSettingTab {
 		if (this.saveButton) {
 			this.saveButton.disabled = !highlight;
 			if (highlight) {
-				this.saveButton.classList.add('is-highlight');
+				this.saveButton.classList.add("is-highlight");
 			} else {
-				this.saveButton.classList.remove('is-highlight');
+				this.saveButton.classList.remove("is-highlight");
 			}
 		}
 	}
@@ -218,8 +218,8 @@ class RelaxSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 		containerEl.empty();
 		const keyValueContainer = containerEl.createEl("div");
-		keyValueContainer.style.display = 'flex';
-		keyValueContainer.style.flexDirection = 'column';
+		keyValueContainer.style.display = "flex";
+		keyValueContainer.style.flexDirection = "column";
 
 		function validateContent(content) {
 			const regex = /\[\[(.+?)\]\]/g;
@@ -229,59 +229,59 @@ class RelaxSettingTab extends PluginSettingTab {
 		function applyValidationStyle(textarea) {
 			if (validateContent(textarea.value)) {
 				const accentColor = getComputedStyle(document.documentElement)
-					.getPropertyValue('--color-accent').trim();
+					.getPropertyValue("--color-accent").trim();
 				textarea.style.borderColor = accentColor
 			} else {
 				textarea.style.borderColor = "red";
 			}
 		}
 
-		document.addEventListener('DOMContentLoaded', (event) => {
+		document.addEventListener("DOMContentLoaded", (event) => {
 			const modalButton = document.querySelector("#openModalButton");
 
-			modalButton.addEventListener('click', function () {
+			modalButton.addEventListener("click", function () {
 				const modal = document.querySelector(".modal");
 				const textarea = modal.querySelector("textarea");
 
 				applyValidationStyle(textarea);
 
-				textarea.addEventListener('input', function () {
+				textarea.addEventListener("input", function () {
 					applyValidationStyle(textarea);
 				});
 			});
 		});
 
 		const validateRegexInput = (input: HTMLInputElement) => {
-			let errorMsg = '';
+			let errorMsg = "";
 			try {
 				let reg = new RegExp(input.value);
 				let groupCount = (input.value.match(/\((?!\?)/g) || []).length;
 				if (groupCount > 1) {
-					input.style.border = '2px solid red';
-					errorMsg = 'More than one group detected.';
+					input.style.border = "2px solid red";
+					errorMsg = "More than one group detected.";
 				} else {
-					input.style.border = '';
+					input.style.border = "";
 				}
 			} catch (e) {
-				input.style.border = '2px solid red';
-				errorMsg = 'Invalid regex.';
+				input.style.border = "2px solid red";
+				errorMsg = "Invalid regex.";
 			}
 
 			const errorElement = input.nextSibling;
-			if (errorElement && errorElement.classList.contains('regex-error')) {
+			if (errorElement && errorElement.classList.contains("regex-error")) {
 				errorElement.textContent = errorMsg;
 			} else {
-				const span = document.createElement('span');
-				span.className = 'regex-error';
+				const span = document.createElement("span");
+				span.className = "regex-error";
 				span.textContent = errorMsg;
 				input.parentNode.insertBefore(span, input.nextSibling);
 			}
 		};
 		const addKeyValue = (key?: string, value?: string, isActive: boolean = false) => {
 			const row = keyValueContainer.createEl("div");
-			row.style.display = 'flex';
-			row.style.alignItems = 'center';
-			row.style.justifyContent = 'space-between'; // Add space between items
+			row.style.display = "flex";
+			row.style.alignItems = "center";
+			row.style.justifyContent = "space-between"; // Add space between items
 
 			const dragHandle = row.createEl("span", {className: "drag-handle", text: "☰"});
 			const activeCheckbox = row.createEl("input", {className: "active-checkbox"});
@@ -290,14 +290,14 @@ class RelaxSettingTab extends PluginSettingTab {
 			row.appendChild(activeCheckbox);
 
 // Key input
-			const keyInput = row.createEl("input", {className: "key-input", placeholder: "Description-Key", value: key ?? ''});
-			keyInput.style.flex = '1'; // Allow this to grow
-			keyInput.style.marginRight = '10px';
+			const keyInput = row.createEl("input", {className: "key-input", placeholder: "Description-Key", value: key ?? ""});
+			keyInput.style.flex = "1"; // Allow this to grow
+			keyInput.style.marginRight = "10px";
 
 // Value input
-			const valueInput = row.createEl("input", {className: "value-input", placeholder: "Regexp", value: value ?? ''});
-			valueInput.style.flex = '2'; // Allow this to grow more than the key input
-			valueInput.style.marginRight = '10px';
+			const valueInput = row.createEl("input", {className: "value-input", placeholder: "Regexp", value: value ?? ""});
+			valueInput.style.flex = "2"; // Allow this to grow more than the key input
+			valueInput.style.marginRight = "10px";
 
 			row.createEl("button", {text: "Delete", className: `delete-button-${key ?? Date.now()}`})
 				.addEventListener("click", () => {
@@ -306,7 +306,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				});
 
 			if (dragHandle) makeDraggable(row, dragHandle);
-			valueInput.addEventListener('input', () => validateRegexInput(valueInput));
+			valueInput.addEventListener("input", () => validateRegexInput(valueInput));
 		};
 
 		containerEl.createEl("button", {text: "Add Regexp"}).addEventListener("click", () => addKeyValue());
@@ -324,9 +324,9 @@ class RelaxSettingTab extends PluginSettingTab {
 			const regexPairs = [];
 			keyValueContainer.querySelectorAll("div").forEach(row => {
 
-				const activeCheckboxInput = row.querySelector('input[type="checkbox"]');
-				const keyInput = row.querySelector('input[placeholder="Description-Key"]');
-				const valueInput = row.querySelector('input[placeholder="Regexp"]');
+				const activeCheckboxInput = row.querySelector("input[type='checkbox']");
+				const keyInput = row.querySelector("input[placeholder='Description-Key']");
+				const valueInput = row.querySelector("input[placeholder='Regexp']");
 
 
 				if (keyInput && valueInput && activeCheckboxInput) {
@@ -354,7 +354,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				return;
 			}
 
-			dragHandle.addEventListener('mousedown', function (e) {
+			dragHandle.addEventListener("mousedown", function (e) {
 				e.preventDefault();
 				e.stopPropagation();
 
@@ -364,14 +364,14 @@ class RelaxSettingTab extends PluginSettingTab {
 				currentIndex = [...element.parentElement.children].indexOf(element);
 
 				dragElement = element;
-				dragElement.style.zIndex = '1000';
-				dragElement.style.position = 'absolute';
+				dragElement.style.zIndex = "1000";
+				dragElement.style.position = "absolute";
 
 				const newTop = e.clientY - initialOffsetY;
 				dragElement.style.top = `${newTop}px`;
 
-				document.addEventListener('mousemove', onDragMove);
-				document.addEventListener('mouseup', onDragEnd);
+				document.addEventListener("mousemove", onDragMove);
+				document.addEventListener("mouseup", onDragEnd);
 			});
 		}
 
@@ -397,9 +397,9 @@ class RelaxSettingTab extends PluginSettingTab {
 
 		function onDragEnd() {
 			if (dragElement) {
-				dragElement.style.position = '';
-				dragElement.style.top = '';
-				dragElement.style.zIndex = '';
+				dragElement.style.position = "";
+				dragElement.style.top = "";
+				dragElement.style.zIndex = "";
 
 				if (newIndex !== null && currentIndex !== null && newIndex !== currentIndex) {
 					const parent = dragElement.parentElement;
@@ -412,8 +412,8 @@ class RelaxSettingTab extends PluginSettingTab {
 
 				dragElement = null;
 				updateRegexOrderFromDOM.call(this);
-				document.removeEventListener('mousemove', onDragMove);
-				document.removeEventListener('mouseup', onDragEnd);
+				document.removeEventListener("mousemove", onDragMove);
+				document.removeEventListener("mouseup", onDragEnd);
 				reorderElements();
 				currentIndex = null;
 				newIndex = null;
@@ -422,11 +422,11 @@ class RelaxSettingTab extends PluginSettingTab {
 
 		function reorderElements() {
 			keyValueContainer.querySelectorAll("div").forEach((row) => {
-				row.style.top = '';
+				row.style.top = "";
 			});
 		}
 		new Setting(containerEl)
-			.setName('Ignore Links')
+			.setName("Ignore Links")
 			.addToggle(toggle => {
 				toggle
 					.setValue(this.plugin.settings.ignoreLinks ?? true)
@@ -438,7 +438,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				;
 			});
 		new Setting(containerEl)
-			.setName('Ignore URLs')
+			.setName("Ignore URLs")
 			.addToggle(toggle => {
 				toggle
 					.setValue(this.plugin.settings.ignoreURLs ?? true)
@@ -450,7 +450,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				;
 			});
 		new Setting(containerEl)
-			.setName('Defang URLs')
+			.setName("Defang URLs")
 			.addToggle(toggle => {
 				toggle
 					.setValue(this.plugin.settings.defangURLs ?? true)
@@ -462,7 +462,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				;
 			});
 		new Setting(containerEl)
-			.setName('Ignore Code Blocks')
+			.setName("Ignore Code Blocks")
 			.addToggle(toggle => {
 				toggle
 					.setValue(this.plugin.settings.ignoreCodeBlocks ?? false)
@@ -479,7 +479,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				button.setButtonText("Save")
 					.onClick(() => {
 						updateRegexOrderFromDOM(this)
-						const closeButton = document.querySelector('.modal-close-button');
+						const closeButton = document.querySelector(".modal-close-button");
 						if (closeButton) {
 							closeButton.click();
 						}
@@ -501,32 +501,22 @@ class RelaxSettingTab extends PluginSettingTab {
 							if (this.plugin._settingTabReference) {
 								this.plugin._settingTabReference.display();
 							}
-							new Notice('Settings have been reset to defaults.');
+							new Notice("Settings have been reset to defaults.");
 						}
 					});
 			});
 		const updateHighlitedState = () => this.setHighlighted(true);
-		keyValueContainer.addEventListener('input', updateHighlitedState);
-		keyValueContainer.addEventListener('change', updateHighlitedState);
+		keyValueContainer.addEventListener("input", updateHighlitedState);
+		keyValueContainer.addEventListener("change", updateHighlitedState);
 	}
 
 	async resetToDefaults() {
 		this.plugin.settings = DEFAULT_SETTINGS;
 		await this.plugin.saveSettings();
 
-		new Notice('Settings have been reset to defaults.');
+		new Notice("Settings have been reset to defaults.");
 	}
 }
-	function containsValidLink(line: string, match: string): boolean {
-		const linkRegex = /\[\[.*?\]\]/g;
-		let result;
-		while ((result = linkRegex.exec(line)) !== null) {
-			if (result.index <= line.indexOf(match) && linkRegex.lastIndex >= line.indexOf(match) + match.length) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 export default class RelaxPlugin extends Plugin {
 	settings: RelaxPluginSettings;
@@ -538,7 +528,7 @@ async onload() {
 		this._settingTabReference = new RelaxSettingTab(this.app, this);
 
 		this.addSettingTab(this._settingTabReference);
-		this.addCommand({id: 'Relax-command', name: 'Relax', callback: () => this.addBrackets()});
+		this.addCommand({id: "Relax-command", name: "Relax", callback: () => this.addBrackets()});
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
 				menu.addItem((item) => {
@@ -585,7 +575,7 @@ async onload() {
 	async resetToDefaults() {
 		this.settings = DEFAULT_SETTINGS;
 		await this.saveSettings();
-		new Notice('Settings have been reset to defaults.');
+		new Notice("Settings have been reset to defaults.");
 	}
 
 	async loadSettings() {
@@ -606,11 +596,11 @@ async onload() {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-		new Notice('Config saved!');
+		new Notice("Config saved!");
 	}
 
 	removeBracketsInSelection(content: string): string {
-		return content.replace(/([^!])\[\[([^\]]+)\]\]/g, '$1$2');
+		return content.replace(/([^!])\[\[([^\]]+)\]\]/g, "$1$2");
 	}
 
 	async addBracketsForFile(noteFilePath = "") {
@@ -642,12 +632,12 @@ async onload() {
 			}
 
 			if (!noteFile) {
-				new Notice('No file selected. Please select a markdown file from the editor or navigation bar.');
+				new Notice("No file selected. Please select a markdown file from the editor or navigation bar.");
 				return;
 			}
 
 			if (!(leaf.view instanceof MarkdownView)) {
-				new Notice('Please open a markdown file or select a folder');
+				new Notice("Please open a markdown file or select a folder");
 				return;
 			}
 
@@ -662,16 +652,27 @@ async onload() {
 		const urlRegex = /(https?:\/\/[^\s]+)/g;
 		const excludedExtensions = /\.(exe|lnk|xls|md|sh|elf|bin|tmp|doc|odt|docx|pdf|yara|dll|txt)$/;
 		const fangMap = {
-			'[.]': '.',
-			'[:]': ':'
+			"[.]": ".",
+			"[:]": ":"
 		};
 		if (settings.defangURLs) {
 			content = content.replace(/\[\.\]|\[\:\]/g, char => fangMap[char]);
 		}
 
-		let updatedText = '';
+		let updatedText = "";
 		const lines = content.split("\n");
 		let inCodeBlock = false;
+
+		function containsValidLink(line: string, match: string): boolean {
+			const linkRegex = /\[\[.*?\]\]/g;
+			let result;
+			while ((result = linkRegex.exec(line)) !== null) {
+				if (result.index <= line.indexOf(match) && linkRegex.lastIndex >= line.indexOf(match) + match.length) {
+					return true;
+				}
+			}
+			return false;
+		}
 
 		lines.forEach((line, index) => {
 			if (settings.ignoreCodeBlocks && line.trim().startsWith("```")) {
@@ -690,7 +691,7 @@ async onload() {
 					continue;
 				}
 
-				const compiledRegex = new RegExp(regex, 'g');
+				const compiledRegex = new RegExp(regex, "g");
 				line = line.replace(compiledRegex, (match, ...args) => {
 					const groups = args.slice(0, -2).filter(g => g !== undefined);
 					const capturedValue = groups[0];
@@ -734,13 +735,13 @@ async onload() {
 		const activeLeaf = this.app.workspace.activeLeaf;
 
 		if (!activeLeaf) {
-			new Notice('Please open a markdown file or select a folder');
+			new Notice("Please open a markdown file or select a folder");
 			return;
 		}
 
 		const view = activeLeaf.view;
 		if (!view) {
-			new Notice('Unknown item selected. Please select a markdown file or folder');
+			new Notice("Unknown item selected. Please select a markdown file or folder");
 			return;
 		}
 
@@ -749,42 +750,42 @@ async onload() {
 
 			if (selection && selection.trim().length !== 0) {
 				let updatedSelection;
-				if (action === 'removeBrackets') {
+				if (action === "removeBrackets") {
 					updatedSelection = this.removeBracketsInSelection(selection);
-					new Notice('Removed brackets from selection!');
+					new Notice("Removed brackets from selection!");
 				} else {
 					updatedSelection = this.updateSelection(selection, this.settings);
-					new Notice('Added brackets in selection!');
+					new Notice("Added brackets in selection!");
 				}
 				view.editor.replaceSelection(updatedSelection);
-				new Notice(action === 'removeBrackets' ? 'Removed brackets from selection!' : 'Updated content in selection!');
+				new Notice(action === "removeBrackets" ? "Removed brackets from selection!" : "Updated content in selection!");
 			} else {
-				if (action === 'removeBrackets') {
+				if (action === "removeBrackets") {
 					await this.removeBracketsinFile();
-					new Notice('Removed brackets from entire file!');
+					new Notice("Removed brackets from entire file!");
 				} else {
 					await this.addBracketsForFile();
-					new Notice('Added brackets on entire file!');
+					new Notice("Added brackets on entire file!");
 				}
 			}
 		}
 	}
 
 	async removeBrackets() {
-		await this.processMarkdownContent('removeBrackets');
+		await this.processMarkdownContent("removeBrackets");
 	}
 
 	async addBrackets() {
 		const activeLeaf = this.app.workspace.activeLeaf;
 
 		if (!activeLeaf) {
-			new Notice('Please open a markdown file or select a folder');
+			new Notice("Please open a markdown file or select a folder");
 			return;
 		}
 
 		const view = activeLeaf.view;
 		if (!view) {
-			new Notice('Unknown item selected. Please select a markdown file or folder');
+			new Notice("Unknown item selected. Please select a markdown file or folder");
 			return;
 		}
 
@@ -795,10 +796,10 @@ async onload() {
 			if (selection && selection.trim().length !== 0) {
 				const updatedSelection = this.updateSelection(selection, this.settings);
 				editor.replaceSelection(updatedSelection);
-				new Notice('Added brackets in selection!');
+				new Notice("Added brackets in selection!");
 			} else {
 				await this.addBracketsForFile();
-				new Notice('Updated entire file!');
+				new Notice("Updated entire file!");
 			}
 		} else if (view.focusedItem && view.focusedItem.collapsible) {
 			const folderPath = view.focusedItem.file.path;
@@ -807,7 +808,7 @@ async onload() {
 			const filePath = view.focusedItem.file.path;
 			await this.addBracketsForFile(filePath);
 		} else {
-			new Notice('No markdown file or folder is currently selected. Please select one.');
+			new Notice("No markdown file or folder is currently selected. Please select one.");
 		}
 	}
 
