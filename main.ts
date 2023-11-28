@@ -5,6 +5,7 @@ interface RelaxPluginSettings {
 	ignoreLinks?: boolean;
 	ignoreURLs?: boolean;
 	defangURLs?: boolean;
+	ignoreCodeBlocks?: boolean;
 }
 
 const DEFAULT_SETTINGS: RelaxPluginSettings = {
@@ -186,8 +187,9 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		}
 	],
 	ignoreLinks: true,
-	ignoreURLs: false,
-	defangURLs: true
+	ignoreCodeBlocks: true,
+	defangURLs: true,
+	ignoreURLs: false
 };
 
 class Mutex {
@@ -484,6 +486,18 @@ class RelaxSettingTab extends PluginSettingTab {
 					.setTooltip("https[:]// -> https://")
 				;
 			});
+		new Setting(containerEl)
+			.setName('Ignore Code Blocks')
+			.addToggle(toggle => {
+				toggle
+					.setValue(this.plugin.settings.ignoreCodeBlocks ?? false)
+					.onChange(async value => {
+						this.plugin.settings.ignoreCodeBlocks = value;
+						await this.plugin.saveSettings();
+					})
+					.setTooltip("Ignore content within code blocks when replacing regexes.");
+			});
+
 		const saveButtonSetting = new Setting(containerEl)
 			.setName("Save")
 			.addButton(button => {
@@ -686,8 +700,20 @@ async onload() {
 
 		let updatedText = '';
 		const lines = content.split("\n");
+		let inCodeBlock = false;
 
 		lines.forEach((line, index) => {
+			if (settings.ignoreCodeBlocks && line.trim().startsWith("```")) {
+				inCodeBlock = !inCodeBlock;
+				updatedText += line + "\n";
+				return;
+			}
+
+			if (inCodeBlock) {
+				updatedText += line + "\n";
+				return;
+			}
+
 			for (const {isActive, key, regex} of settings.regexPairs) {
 				if (!isActive) {
 					continue;
