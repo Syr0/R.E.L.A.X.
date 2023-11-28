@@ -365,13 +365,11 @@ class RelaxSettingTab extends PluginSettingTab {
 			} else {
 				console.error("Plugin or settings not available");
 			}
-
 		}
 
 		let dragElement = null;
 		let currentIndex = null;
 		let newIndex = null;
-
 
 		function makeDraggable(element, dragHandle) {
 			if (!dragHandle) {
@@ -495,14 +493,14 @@ class RelaxSettingTab extends PluginSettingTab {
 						this.plugin.settings.ignoreCodeBlocks = value;
 						await this.plugin.saveSettings();
 					})
-					.setTooltip("Ignore content within code blocks when replacing regexes.");
+					.setTooltip("Ignore content within code blocks when linking regexes.");
 			});
 
-		const saveButtonSetting = new Setting(containerEl)
+		new Setting(containerEl)
 			.setName("Save")
 			.addButton(button => {
 				button.setButtonText("Save")
-					.onClick(async () => {
+					.onClick(() => {
 						updateRegexOrderFromDOM(this)
 						const closeButton = document.querySelector('.modal-close-button');
 						if (closeButton) {
@@ -538,8 +536,6 @@ class RelaxSettingTab extends PluginSettingTab {
 
 	async resetToDefaults() {
 		this.plugin.settings = DEFAULT_SETTINGS;
-
-		// Speichern der Standardwerte
 		await this.plugin.saveSettings();
 
 		new Notice('Settings have been reset to defaults.');
@@ -631,7 +627,6 @@ async onload() {
 
 	onunload() {
 	}
-
 
 	async saveSettings() {
 		await this.saveData(this.settings);
