@@ -68,7 +68,7 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		{
 			"isActive": false,
 			"key": "Markdown-Italic",
-			"regex": "(?:[´'`‘’](((?:(?!<br>|\\r|\\n)[^´’‘'` ]){4,30}))[´’‘'`]|(?:[\"“]((?:(?!<br>|\\r|\\n)[^\"”]){4,50})[\"”])|(?:_((?:(?!<br>|\\r|\\n)[^_]){4,50})_))"
+			"regex": "(?:[´'‘’](((?:(?!<br>|\\r|\\n)[^´’‘' ]){4,30}))[´’‘']|(?:[\"“]((?:(?!<br>|\\r|\\n)[^\"”]){4,50})[\"”])|(?:[_]((?:(?!<br>|\\r|\\n)[^_]){4,50})[_]))"
 		},
 		{
 			"isActive": true,
@@ -632,7 +632,7 @@ async onload() {
 	}
 
 	removeBracketsInSelection(content: string): string {
-		return content.replace(/(?<!\!\[)\[|\](?!\])/g, '');
+		return content.replace(/([^!])\[\[([^\]]+)\]\]/g, '$1$2');
 	}
 
 	async addBracketsForFile(noteFilePath = "") {
