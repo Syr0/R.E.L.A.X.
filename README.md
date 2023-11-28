@@ -5,7 +5,7 @@
   <a href="#"><img src="https://img.shields.io/badge/Version-1.3.5-blue"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-MIT-orange"></a>
   <a href="#"><img src="https://img.shields.io/badge/Support-Daily-brightgreen"></a>
-  <a href="#"><img src="https://img.shields.io/badge/KnownBugs-0-green"></a>
+  <a href="#"><img src="https://img.shields.io/badge/KnownBugs-2-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/ChatGPT-Approved-red"></a></h1>
 </p>
 
