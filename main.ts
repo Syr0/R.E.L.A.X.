@@ -196,7 +196,7 @@ class RelaxSettingTab extends PluginSettingTab {
 	plugin: RelaxPlugin;
 	keyValueContainer: HTMLDivElement;
 	saveButton: HTMLButtonElement;
-	isHighlited: boolean = false;
+	isHighlited = false;
 
 	constructor(app: App, plugin: RelaxPlugin) {
 		super(app, plugin);
@@ -254,8 +254,8 @@ class RelaxSettingTab extends PluginSettingTab {
 		const validateRegexInput = (input: HTMLInputElement) => {
 			let errorMsg = "";
 			try {
-				let reg = new RegExp(input.value);
-				let groupCount = (input.value.match(/\((?!\?)/g) || []).length;
+				//let reg = new RegExp(input.value);
+				const groupCount = (input.value.match(/\((?!\?)/g) || []).length;
 				if (groupCount > 1) {
 					input.style.border = "2px solid red";
 					errorMsg = "More than one group detected.";
@@ -277,7 +277,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				input.parentNode.insertBefore(span, input.nextSibling);
 			}
 		};
-		const addKeyValue = (key?: string, value?: string, isActive: boolean = false) => {
+		const addKeyValue = (key?: string, value?: string, isActive = false) => {
 			const row = keyValueContainer.createEl("div");
 			row.style.display = "flex";
 			row.style.alignItems = "center";
@@ -315,8 +315,8 @@ class RelaxSettingTab extends PluginSettingTab {
 			addKeyValue(key, regex, isActive);
 		}
 
-		let startY = 0;
-		let startTop = 0;
+		const startY = 0;
+		const startTop = 0;
 		let initialOffsetY = 0
 
 		function updateRegexOrderFromDOM(pluginObj) {
@@ -820,7 +820,7 @@ async onload() {
 		const totalFiles = files.length;
 		let processedFiles = 0;
 
-		let processingNotice = new Notice(`Processing ${totalFiles} files...`, totalFiles * 1000);
+		const processingNotice = new Notice(`Processing ${totalFiles} files...`, totalFiles * 1000);
 
 		const taskQueue = files.map(file => () => this.addBracketsForFile(file.path).then(() => {
 			processedFiles++;
