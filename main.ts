@@ -32,27 +32,27 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		{
 			"isActive": true,
 			"key": "SHA256",
-			"regex": "([a-fA-F0-9]{64})"
+			"regex": "\\b([a-fA-F0-9]{64})\\b"
 		},
 		{
 			"isActive": true,
 			"key": "JARM",
-			"regex": "([a-fA-F0-9]{62})"
+			"regex": "\\b([a-fA-F0-9]{62})\\b"
 		},
 		{
 			"isActive": true,
 			"key": "SHA1",
-			"regex": "([a-fA-F0-9]{40})"
+			"regex": "\\b([a-fA-F0-9]{40})\\b"
 		},
 		{
 			"isActive": true,
 			"key": "MD5",
-			"regex": "([a-fA-F0-9]{32})"
+			"regex": "\\b([a-fA-F0-9]{32})\\b"
 		},
 		{
 			"isActive": true,
 			"key": "Bitcoin",
-			"regex": "([13]{1}[a-km-zA-HJ-NP-Z1-9]{26,33}|bc1[a-z0-9]{39,59})"
+			"regex": "\\b([13]{1}[a-km-zA-HJ-NP-Z1-9]{26,33}|bc1[a-z0-9]{39,59})\\b"
 		},
 		{
 			"isActive": true,
@@ -65,7 +65,7 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 			"regex": "\\\\Users\\\\+(?!(?:Public|Administrator)\\\\)([^\\\\]+)\\\\"
 		},
 		{
-			"isActive": true,
+			"isActive": false,
 			"key": "Markdown-Italic",
 			"regex": "(?:[´'`‘’](((?:(?!<br>|\\r|\\n)[^´’‘'` ]){4,30}))[´’‘'`]|(?:[\"“]((?:(?!<br>|\\r|\\n)[^\"”]){4,50})[\"”])|(?:_((?:(?!<br>|\\r|\\n)[^_]){4,50})_))"
 		},
@@ -126,11 +126,6 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		},
 		{
 			"isActive": true,
-			"key": "Chord Progressions",
-			"regex": "\\b((?:C|Dm|Em|F|G|Am|Bdim)(?:\\s->\\s(?:C|Dm|Em|F|G|Am|Bdim))*)\\b"
-		},
-		{
-			"isActive": true,
 			"key": "Images",
 			"regex": "([\\w]+\\.(?:jpg|jpeg|png|gif|bmp|tiff))[\\b]"
 		},
@@ -161,6 +156,11 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		},
 		{
 			"isActive": false,
+			"key": "Chord Progressions",
+			"regex": "\\b((?:C|Dm|Em|F|G|Am|Bdim)(?:\\s->\\s(?:C|Dm|Em|F|G|Am|Bdim))*)\\b"
+		},
+		{
+			"isActive": false,
 			"key": "Hex Colors",
 			"regex": "#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})"
 		},
@@ -184,8 +184,6 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 			"key": "Temperature Readings",
 			"regex": "\\b-?[0-9]+\\s?(°C|°F|K)\\b"
 		}
-
-
 	],
 	ignoreLinks: true,
 	ignoreURLs: false,
