@@ -535,7 +535,7 @@ async onload() {
 		this._settingTabReference = new RelaxSettingTab(this.app, this);
 
 		this.addSettingTab(this._settingTabReference);
-		this.addCommand({id: "Relax-command", name: "Relax", callback: () => this.addBrackets()});
+		this.addCommand({id: "relax", name: "R.E.L.A.X.", callback: () => this.addBrackets()});
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
 				menu.addItem((item) => {
