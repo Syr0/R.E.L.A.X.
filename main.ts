@@ -823,9 +823,6 @@ async onload() {
 		}
 	}
 
-
-	private progress = 0;
-
 	async addBracketsForFolder(folderPath: string) {
 		const files = this.app.vault.getMarkdownFiles().filter(file => file.path.startsWith(folderPath));
 		const totalFiles = files.length;
@@ -833,20 +830,33 @@ async onload() {
 
 		const processingNotice = new Notice(`Processing ${totalFiles} files...`, totalFiles * 1000);
 
-		const taskQueue = files.map(file => () => this.addBracketsForFile(file.path).then(() => {
+		const maxConcurrentTasks = 20;
+		const taskQueue = [];
+
+		const processFile = async (file) => {
+			await this.addBracketsForFile(file.path);
 			processedFiles++;
 			processingNotice.setMessage(`Processing file ${processedFiles} of ${totalFiles}`);
-		}));
-
-		const processQueue = async () => {
-			if (taskQueue.length === 0) return;
-			await taskQueue.shift()();
+			if (taskQueue.length > 0) {
+				const nextTask = taskQueue.shift();
+				await nextTask();
+			}
 		};
 
-		const maxConcurrentTasks = 200;
-		const promises = Array(Math.min(maxConcurrentTasks, taskQueue.length)).fill(null).map(processQueue);
+		const enqueueTask = (file) => {
+			if (taskQueue.length < maxConcurrentTasks) {
+				taskQueue.push(() => processFile(file));
+			} else {
+				processFile(file);
+			}
+		};
 
-		await Promise.all(promises);
+		files.forEach(file => enqueueTask(file));
+
+		while (taskQueue.length > 0) {
+			const nextTask = taskQueue.shift();
+			await nextTask();
+		}
 
 		processingNotice.hide();
 		new Notice(`All ${totalFiles} files in the folder processed.`);
