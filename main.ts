@@ -519,7 +519,6 @@ class RelaxSettingTab extends PluginSettingTab {
 							if (this.plugin._settingTabReference) {
 								this.plugin._settingTabReference.display();
 							}
-							new Notice("Settings have been reset to defaults.");
 						}
 					});
 			});
@@ -833,7 +832,7 @@ async onload() {
 		const maxConcurrentTasks = 20;
 		const taskQueue = [];
 
-		const processFile = async (file) => a{
+		const processFile = async (file) => {
 			await this.addBracketsForFile(file.path);
 			processedFiles++;
 			processingNotice.setMessage(`Processing file ${processedFiles} of ${totalFiles}`);
