@@ -68,9 +68,40 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		},
 		{
 			"isActive": true,
-			"key": "Markdown-Italic",
-			"regex": "(?:[´'‘’](((?:(?!<br>|\\r|\\n)[^´’‘' ]){4,30}))[´’‘']|(?:[\"“]((?:(?!<br>|\\r|\\n)[^\"”]){4,50})[\"”])|(?:[_]((?:(?!<br>|\\r|\\n)[^_]){4,50})[_]))"
+			"key": "Markdown ´",
+			"regex": "(?:[´](((?:(?!<br>|\\r|\\n)[^´ ]){4,30}))[´])"
 		},
+		{
+			"isActive": true,
+			"key": "Markdown '",
+			"regex": "(?:['](((?:(?!<br>|\\r|\\n)[^' ]){4,30}))['])"
+		},
+		{
+			"isActive": true,
+			"key": "Markdown ‘",
+			"regex": "(?:[‘](((?:(?!<br>|\\r|\\n)[^‘ ]){4,30}))[‘])"
+		},
+		{
+			"isActive": true,
+			"key": "Markdown ’",
+			"regex": "(?:[’](((?:(?!<br>|\\r|\\n)[^’ ]){4,30}))[’])"
+		},
+		{
+			"isActive": true,
+			"key": "Markdown \"",
+			"regex": "(?:[\"](((?:(?!<br>|\\r|\\n)[^\" ]){4,30}))[\"])"
+		},
+		{
+			"isActive": true,
+			"key": "Markdown ”",
+			"regex": "(?:[”](((?:(?!<br>|\\r|\\n)[^” ]){4,30}))[”])"
+		},
+		{
+			"isActive": true,
+			"key": "Markdown _",
+			"regex": "(?:[_](((?:(?!<br>|\\r|\\n)[^_ ]){4,30}))[_])"
+		},
+
 		{
 			"isActive": true,
 			"key": "Quotes-DE",
