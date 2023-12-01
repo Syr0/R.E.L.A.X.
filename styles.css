@@ -57,3 +57,10 @@
 	flex: 2;
 	margin-right: 10px;
 }
+.custom-top {
+	top: 1px;
+}
+.invalid-border {
+	border: 2px solid red;
+}
+

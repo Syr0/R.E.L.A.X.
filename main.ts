@@ -198,12 +198,19 @@ class RelaxSettingTab extends PluginSettingTab {
 	keyValueContainer: HTMLDivElement;
 	saveButton: HTMLButtonElement;
 	isHighlited = false;
-	private updateRegexOrderFromDOM: () => void;
-	private saveChanges: () => void;
+	dragElement = null;
+	currentIndex = null;
+	newIndex = null;
+	startY = 0;
+	startTop = 0;
+	initialOffsetY = 0;
 
 	constructor(app: App, plugin: RelaxPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+		this.onDragEnd = this.onDragEnd.bind(this);
+		this.onDragMove = this.onDragMove.bind(this);
+		this.makeDraggable = this.makeDraggable.bind(this);
 
 		this.updateRegexOrderFromDOM = () => {
 			const regexPairs = [];
@@ -236,6 +243,81 @@ class RelaxSettingTab extends PluginSettingTab {
 		};
 	}
 
+	makeDraggable(element, dragHandle) {
+		if (!dragHandle) {
+			console.error("Drag handle not found!", element.innerHTML);
+			return;
+		}
+
+		dragHandle.addEventListener("mousedown", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+
+			const settingsContainerTop = document.querySelector(".vertical-tab-content-container").getBoundingClientRect().top;
+			const elementRect = element.getBoundingClientRect();
+			this.initialOffsetY = e.clientY - elementRect.top + settingsContainerTop;
+			this.currentIndex = [...element.parentElement.children].indexOf(element);
+
+			this.dragElement = element;
+			this.dragElement.classList.add("dragging");
+
+			const newTop = e.clientY - this.initialOffsetY;
+			this.dragElement.style.top = `${newTop}px`;
+
+			document.addEventListener("mousemove", this.onDragMove);
+			document.addEventListener("mouseup", this.onDragEnd);
+		});
+	}
+
+	onDragMove(e) {
+		if (this.dragElement) {
+			const newTop = e.clientY - this.initialOffsetY;
+			this.dragElement.style.top = `${newTop}px`;
+
+			this.newIndex = null;
+			let closestDistance = Infinity;
+			[...this.dragElement.parentElement.children].forEach((child, idx) => {
+				if (child !== this.dragElement) {
+					const rect = child.getBoundingClientRect();
+					const distance = Math.abs(rect.top + rect.height / 2 - e.clientY);
+					if (distance < closestDistance) {
+						closestDistance = distance;
+						this.newIndex = idx;
+					}
+				}
+			});
+		}
+	}
+
+	onDragEnd() {
+		if (this.dragElement) {
+			this.dragElement.classList.remove("dragging");
+
+			if (this.newIndex !== null && this.currentIndex !== null && this.newIndex !== this.currentIndex) {
+				const parent = this.dragElement.parentElement;
+				if (this.newIndex >= parent.children.length) {
+					parent.appendChild(this.dragElement);
+				} else {
+					parent.insertBefore(this.dragElement, parent.children[this.newIndex + (this.newIndex > this.currentIndex ? 1 : 0)]);
+				}
+			}
+
+			this.dragElement = null;
+			this.updateRegexOrderFromDOM();
+			document.removeEventListener("mousemove", this.onDragMove);
+			document.removeEventListener("mouseup", this.onDragEnd);
+			this.reorderElements();
+			this.currentIndex = null;
+			this.newIndex = null;
+		}
+	}
+
+	reorderElements() {
+		this.keyValueContainer.querySelectorAll("div").forEach((row) => {
+			row.classList.remove("custom-top");
+		});
+	}
+
 	setHighlighted(highlight: boolean) {
 		this.isHighlited = highlight;
 		if (this.saveButton) {
@@ -261,8 +343,6 @@ class RelaxSettingTab extends PluginSettingTab {
 
 		function applyValidationStyle(textarea) {
 			if (validateContent(textarea.value)) {
-				const accentColor = getComputedStyle(document.documentElement)
-					.getPropertyValue("--color-accent").trim();
 				textarea.classList.toggle("valid-content", validateContent(textarea.value));
 			} else {
 				textarea.classList.toggle("invalid-content", !validateContent(textarea.value));
@@ -290,13 +370,13 @@ class RelaxSettingTab extends PluginSettingTab {
 				const reg = new RegExp(input.value);
 				const groupCount = (input.value.match(/\((?!\?)/g) || []).length;
 				if (groupCount > 1) {
-					input.style.border = "2px solid red";
+					input.classList.add("invalid-border");
 					errorMsg = "More than one group detected.";
 				} else {
-					input.style.border = "";
+					input.classList.remove("invalid-border");
 				}
 			} catch (e) {
-				input.style.border = "2px solid red";
+				input.classList.add("invalid-border");
 				errorMsg = "Invalid regex.";
 			}
 
@@ -329,10 +409,10 @@ class RelaxSettingTab extends PluginSettingTab {
 			row.createEl("button", {text: "Delete", className: `delete-button-${key ?? Date.now()}`})
 				.addEventListener("click", () => {
 					row.remove();
-					this.updateRegexOrderFromDOM.call(this);
+					this.updateRegexOrderFromDOM();
 				});
 
-			if (dragHandle) makeDraggable(row, dragHandle);
+			if (dragHandle) this.makeDraggable(row, dragHandle);
 			valueInput.addEventListener("input", () => validateRegexInput(valueInput));
 		};
 
@@ -342,89 +422,8 @@ class RelaxSettingTab extends PluginSettingTab {
 			addKeyValue(key, regex, isActive);
 		}
 
-		const startY = 0;
-		const startTop = 0;
-		let initialOffsetY = 0
 
 
-		let dragElement = null;
-		let currentIndex = null;
-		let newIndex = null;
-
-		function makeDraggable(element, dragHandle) {
-			if (!dragHandle) {
-				console.error("Drag handle not found!", element.innerHTML);
-				return;
-			}
-
-			dragHandle.addEventListener("mousedown", function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-
-				const settingsContainerTop = document.querySelector(".vertical-tab-content-container").getBoundingClientRect().top;
-				const elementRect = element.getBoundingClientRect();
-				initialOffsetY = e.clientY - elementRect.top + settingsContainerTop;
-				currentIndex = [...element.parentElement.children].indexOf(element);
-
-				dragElement = element;
-				dragElement.classList.add("dragging");
-
-				const newTop = e.clientY - initialOffsetY;
-				dragElement.style.top = `${newTop}px`;
-
-				document.addEventListener("mousemove", onDragMove);
-				document.addEventListener("mouseup", onDragEnd);
-			});
-		}
-
-		function onDragMove(e) {
-			if (dragElement) {
-				const newTop = e.clientY - initialOffsetY;
-				dragElement.style.top = `${newTop}px`;
-
-				newIndex = null;
-				let closestDistance = Infinity;
-				[...dragElement.parentElement.children].forEach((child, idx) => {
-					if (child !== dragElement) {
-						const rect = child.getBoundingClientRect();
-						const distance = Math.abs(rect.top + rect.height / 2 - e.clientY);
-						if (distance < closestDistance) {
-							closestDistance = distance;
-							newIndex = idx;
-						}
-					}
-				});
-			}
-		}
-
-		function onDragEnd() {
-			if (dragElement) {
-				dragElement.classList.remove("dragging");
-
-				if (newIndex !== null && currentIndex !== null && newIndex !== currentIndex) {
-					const parent = dragElement.parentElement;
-					if (newIndex >= parent.children.length) {
-						parent.appendChild(dragElement);
-					} else {
-						parent.insertBefore(dragElement, parent.children[newIndex + (newIndex > currentIndex ? 1 : 0)]);
-					}
-				}
-
-				dragElement = null;
-				updateRegexOrderFromDOM.call(this);
-				document.removeEventListener("mousemove", onDragMove);
-				document.removeEventListener("mouseup", onDragEnd);
-				reorderElements();
-				currentIndex = null;
-				newIndex = null;
-			}
-		}
-
-		function reorderElements() {
-			keyValueContainer.querySelectorAll("div").forEach((row) => {
-				row.style.top = "";
-			});
-		}
 		new Setting(containerEl)
 			.setName("Ignore links")
 			.addToggle(toggle => {
