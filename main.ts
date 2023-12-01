@@ -251,8 +251,8 @@ class RelaxSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 		containerEl.empty();
 		this.keyValueContainer = containerEl.createEl("div");
-		this.keyValueContainer.style.display = "flex";
-		this.keyValueContainer.style.flexDirection = "column";
+		this.keyValueContainer.classList.add("flex-column");
+
 
 		function validateContent(content) {
 			const regex = /\[\[(.+?)\]\]/g;
@@ -263,9 +263,9 @@ class RelaxSettingTab extends PluginSettingTab {
 			if (validateContent(textarea.value)) {
 				const accentColor = getComputedStyle(document.documentElement)
 					.getPropertyValue("--color-accent").trim();
-				textarea.style.borderColor = accentColor
+				textarea.classList.toggle("valid-content", validateContent(textarea.value));
 			} else {
-				textarea.style.borderColor = "red";
+				textarea.classList.toggle("invalid-content", !validateContent(textarea.value));
 			}
 		}
 
@@ -312,9 +312,7 @@ class RelaxSettingTab extends PluginSettingTab {
 		};
 		const addKeyValue = (key?: string, value?: string, isActive = false) => {
 			const row = this.keyValueContainer.createEl("div");
-			row.style.display = "flex";
-			row.style.alignItems = "center";
-			row.style.justifyContent = "space-between"; // Add space between items
+			row.classList.add("flex-row");
 
 			const dragHandle = row.createEl("span", {className: "drag-handle", text: "☰"});
 			const activeCheckbox = row.createEl("input", {className: "active-checkbox"});
@@ -322,15 +320,11 @@ class RelaxSettingTab extends PluginSettingTab {
 			activeCheckbox.checked = isActive;
 			row.appendChild(activeCheckbox);
 
-// Key input
 			const keyInput = row.createEl("input", {className: "key-input", placeholder: "Description-Key", value: key ?? ""});
-			keyInput.style.flex = "1"; // Allow this to grow
-			keyInput.style.marginRight = "10px";
+			keyInput.classList.add("key-input-flex");
 
-// Value input
 			const valueInput = row.createEl("input", {className: "value-input", placeholder: "Regexp", value: value ?? ""});
-			valueInput.style.flex = "2"; // Allow this to grow more than the key input
-			valueInput.style.marginRight = "10px";
+			valueInput.classList.add("value-input-flex");
 
 			row.createEl("button", {text: "Delete", className: `delete-button-${key ?? Date.now()}`})
 				.addEventListener("click", () => {
@@ -373,8 +367,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				currentIndex = [...element.parentElement.children].indexOf(element);
 
 				dragElement = element;
-				dragElement.style.zIndex = "1000";
-				dragElement.style.position = "absolute";
+				dragElement.classList.add("dragging");
 
 				const newTop = e.clientY - initialOffsetY;
 				dragElement.style.top = `${newTop}px`;
@@ -406,9 +399,7 @@ class RelaxSettingTab extends PluginSettingTab {
 
 		function onDragEnd() {
 			if (dragElement) {
-				dragElement.style.position = "";
-				dragElement.style.top = "";
-				dragElement.style.zIndex = "";
+				dragElement.classList.remove("dragging");
 
 				if (newIndex !== null && currentIndex !== null && newIndex !== currentIndex) {
 					const parent = dragElement.parentElement;
