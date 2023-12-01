@@ -630,7 +630,11 @@ async onload() {
 				new Notice(`No file found at the given path: ${noteFilePath}`);
 				return;
 			}
-			fileContent = await this.app.vault.read(noteFile as TFile);
+			if (!(noteFile instanceof TFile)) {
+				new Notice(`The file at the given path is not a valid text file: ${noteFilePath}`);
+				return;
+			}
+			fileContent = await this.app.vault.read(noteFile);
 		} else {
 			const leaf = this.app.workspace.activeLeaf || this.app.workspace.getLeaf();
 			noteFile = this.app.workspace.getActiveFile();
@@ -640,20 +644,25 @@ async onload() {
 			}
 
 			if (!noteFile) {
-				new Notice("No file selected. Please select a markdown file from the editor or navigation bar.");
+				new Notice('No file selected. Please select a markdown file from the editor or navigation bar.');
 				return;
 			}
 
 			if (!(leaf.view instanceof MarkdownView)) {
-				new Notice("Please open a markdown file or select a folder");
+				new Notice('Please open a markdown file or select a folder');
 				return;
 			}
 
-			fileContent = await this.app.vault.read(noteFile as TFile);
+			if (!(noteFile instanceof TFile)) {
+				new Notice('Selected item is not a valid text file.');
+				return;
+			}
+
+			fileContent = await this.app.vault.read(noteFile);
 		}
 
 		const updatedContent = contentProcessor(fileContent);
-		await this.app.vault.modify(noteFile as TFile, updatedContent);
+		await this.app.vault.modify(noteFile, updatedContent);
 	}
 
 	updateSelection(content: string, settings: RelaxPluginSettings): string {
