@@ -10,6 +10,12 @@ interface RelaxPluginSettings {
 
 const DEFAULT_SETTINGS: RelaxPluginSettings = {
 	"regexPairs": [
+
+		{
+			"isActive": true,
+			"key": "eMail",
+			"regex": "([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,})"
+		},
 		{
 			"isActive": true,
 			"key": "Domains",
@@ -19,11 +25,6 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 			"isActive": true,
 			"key": "IP",
 			"regex": "((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))"
-		},
-		{
-			"isActive": true,
-			"key": "eMail",
-			"regex": "([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,})"
 		},
 		{
 			"isActive": true,
