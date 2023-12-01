@@ -434,7 +434,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			});
 		}
 		new Setting(containerEl)
-			.setName("Ignore Links")
+			.setName("Ignore links")
 			.addToggle(toggle => {
 				toggle
 					.setValue(this.plugin.settings.ignoreLinks ?? true)
@@ -470,7 +470,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				;
 			});
 		new Setting(containerEl)
-			.setName("Ignore Code Blocks")
+			.setName("Ignore code blocks")
 			.addToggle(toggle => {
 				toggle
 					.setValue(this.plugin.settings.ignoreCodeBlocks ?? false)
@@ -497,7 +497,7 @@ class RelaxSettingTab extends PluginSettingTab {
 
 
 		new Setting(containerEl)
-			.setName("Reset Defaults")
+			.setName("Reset defaults")
 			.addButton(button => {
 				button.setButtonText("Reset")
 					.onClick(() => {
