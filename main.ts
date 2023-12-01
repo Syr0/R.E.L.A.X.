@@ -698,10 +698,14 @@ async onload() {
 				if (!isActive) {
 					continue;
 				}
-				const modifiedRegex = `(\\*)${regex}`;
-				const compiledRegex = new RegExp(modifiedRegex, "g");
 
-				line = line.replace(compiledRegex, (match, backslashes, capturedValue, ...args) => {
+				const compiledRegex = new RegExp(regex, "g");
+				line = line.replace(compiledRegex, (match, ...args) => {
+					const groups = args.slice(0, -2).filter(g => g !== undefined);
+					const capturedValue = groups[0];
+
+					if (!capturedValue) return match;
+
 					if (settings.ignoreLinks && containsValidLink(line, capturedValue)) {
 						return match;
 					}
@@ -722,11 +726,7 @@ async onload() {
 						}
 					}
 
-					if (backslashes.length % 2 !== 0) {
-						return backslashes + '\\' + `[[${capturedValue}]]`;
-					} else {
-						return backslashes + `[[${capturedValue}]]`;
-					}
+					return match.replace(capturedValue, `[[${capturedValue}]]`);
 				});
 			}
 			updatedText += line;
@@ -858,6 +858,5 @@ async onload() {
 		processingNotice.hide();
 		new Notice(`All ${totalFiles} files in the folder processed.`);
 	}
-
 
 }
