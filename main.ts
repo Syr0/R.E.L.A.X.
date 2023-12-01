@@ -89,12 +89,7 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		{
 			"isActive": true,
 			"key": "Markdown \"",
-			"regex": "(?:[\"](((?:(?!<br>|\\r|\\n)[^\" ]){4,30}))[\"])"
-		},
-		{
-			"isActive": true,
-			"key": "Markdown ”",
-			"regex": "(?:[”](((?:(?!<br>|\\r|\\n)[^” ]){4,30}))[”])"
+			"regex": "(?:[\"″”](((?:(?!<br>|\\r|\\n)[^\"″” ]){4,30}))[\"″”])"
 		},
 		{
 			"isActive": true,
