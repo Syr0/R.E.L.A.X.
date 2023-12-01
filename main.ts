@@ -701,14 +701,10 @@ async onload() {
 				if (!isActive) {
 					continue;
 				}
+				const modifiedRegex = `(\\*)${regex}`;
+				const compiledRegex = new RegExp(modifiedRegex, "g");
 
-				const compiledRegex = new RegExp(regex, "g");
-				line = line.replace(compiledRegex, (match, ...args) => {
-					const groups = args.slice(0, -2).filter(g => g !== undefined);
-					const capturedValue = groups[0];
-
-					if (!capturedValue) return match;
-
+				line = line.replace(compiledRegex, (match, backslashes, capturedValue, ...args) => {
 					if (settings.ignoreLinks && containsValidLink(line, capturedValue)) {
 						return match;
 					}
@@ -729,7 +725,11 @@ async onload() {
 						}
 					}
 
-					return match.replace(capturedValue, `[[${capturedValue}]]`);
+					if (backslashes.length % 2 !== 0) {
+						return backslashes + '\\' + `[[${capturedValue}]]`;
+					} else {
+						return backslashes + `[[${capturedValue}]]`;
+					}
 				});
 			}
 			updatedText += line;
@@ -833,7 +833,7 @@ async onload() {
 		const maxConcurrentTasks = 20;
 		const taskQueue = [];
 
-		const processFile = async (file) => {
+		const processFile = async (file) => a{
 			await this.addBracketsForFile(file.path);
 			processedFiles++;
 			processingNotice.setMessage(`Processing file ${processedFiles} of ${totalFiles}`);
@@ -861,5 +861,6 @@ async onload() {
 		processingNotice.hide();
 		new Notice(`All ${totalFiles} files in the folder processed.`);
 	}
+
 
 }
