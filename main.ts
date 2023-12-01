@@ -528,13 +528,11 @@ class RelaxSettingTab extends PluginSettingTab {
 	}
 	resetToDefaults() {
 		this.plugin.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-
 		this.plugin.saveSettings().then(() => {
 			new Notice("Settings have been reset to defaults.");
 			this.display();
 		});
 	}
-
 }
 
 export default class RelaxPlugin extends Plugin {
