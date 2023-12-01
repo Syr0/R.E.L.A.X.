@@ -527,13 +527,15 @@ class RelaxSettingTab extends PluginSettingTab {
 		this.keyValueContainer.addEventListener("input", updateHighlitedState);
 		this.keyValueContainer.addEventListener("change", updateHighlitedState);
 	}
+	resetToDefaults() {
+		this.plugin.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 
-	async resetToDefaults() {
-		this.plugin.settings = DEFAULT_SETTINGS;
-		await this.plugin.saveSettings();
-
-		new Notice("Settings have been reset to defaults.");
+		this.plugin.saveSettings().then(() => {
+			new Notice("Settings have been reset to defaults.");
+			this.display();
+		});
 	}
+
 }
 
 export default class RelaxPlugin extends Plugin {
@@ -591,7 +593,7 @@ async onload() {
 	}
 
 	async resetToDefaults() {
-		this.settings = DEFAULT_SETTINGS;
+		this.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 		await this.saveSettings();
 		new Notice("Settings have been reset to defaults.");
 	}
