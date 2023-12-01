@@ -89,18 +89,12 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		{
 			"isActive": true,
 			"key": "Markdown \"",
-			"regex": "(?:[\"″”](((?:(?!<br>|\\r|\\n)[^\"″” ]){4,30}))[\"″”])"
+			"regex": "(?:[\"„″”](((?:(?!<br>|\\r|\\n)[^\"″” ]){4,30}))[\"″”])"
 		},
 		{
 			"isActive": true,
 			"key": "Markdown _",
 			"regex": "(?:[_](((?:(?!<br>|\\r|\\n)[^_ ]){4,30}))[_])"
-		},
-
-		{
-			"isActive": true,
-			"key": "Quotes-DE",
-			"regex": "„([^\\\"]+){5,66}[\"|\"]"
 		},
 		{
 			"isActive": true,
