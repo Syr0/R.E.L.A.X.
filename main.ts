@@ -19,12 +19,12 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		{
 			"isActive": true,
 			"key": "Domains",
-			"regex": "([a-zA-Z0-9\\-\\.]+\\.(?:com|org|net|mil|edu|COM|ORG|NET|MIL|EDU))"
+			"regex": "\\b([a-zA-Z0-9\\-\\.]+\\.(?:com|org|net|mil|edu|COM|ORG|NET|MIL|EDU))"
 		},
 		{
 			"isActive": true,
 			"key": "IP",
-			"regex": "((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))"
+			"regex": "\\b((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))\\b"
 		},
 		{
 			"isActive": true,
@@ -95,6 +95,11 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 			"isActive": true,
 			"key": "Markdown _",
 			"regex": "(?:[_](((?:(?!<br>|\\r|\\n)[^_ ]){4,30}))[_])"
+		},
+		{
+			"isActive": true,
+			"key": "Markdown ‘’",
+			"regex": "(?:[‘](((?:(?!<br>|\\r|\\n)[^’ ]){4,30}))[’])"
 		},
 		{
 			"isActive": true,
