@@ -24,7 +24,7 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		{
 			"isActive": true,
 			"key": "IP",
-			"regex": "((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))"
+			"regex": "((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))\b"
 		},
 		{
 			"isActive": true,
@@ -95,21 +95,6 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 			"isActive": true,
 			"key": "Markdown _",
 			"regex": "(?:[_](((?:(?!<br>|\\r|\\n)[^_ ]){4,30}))[_])"
-		},
-		{
-			"isActive": true,
-			"key": "Windows Forensics",
-			"regex": "([\\w]+.(?:bat|ps1|dll|exe|reg))[\\b]"
-		},
-		{
-			"isActive": true,
-			"key": "Linux Forensics",
-			"regex": "([\\w]+\\.(?:sh|so|conf|tar.gz))[\\b]"
-		},
-		{
-			"isActive": true,
-			"key": "Mac Forensics",
-			"regex": "([\\w]+\\.(?:app|pkg|dmg))[\\b]"
 		},
 		{
 			"isActive": true,
@@ -698,13 +683,18 @@ async onload() {
 				if (!isActive) {
 					continue;
 				}
-
 				const compiledRegex = new RegExp(regex, "g");
 				line = line.replace(compiledRegex, (match, ...args) => {
 					const groups = args.slice(0, -2).filter(g => g !== undefined);
 					const capturedValue = groups[0];
 
 					if (!capturedValue) return match;
+
+
+				const modifiedRegex = `\\?(${regex})`;
+				const compiledRegex = new RegExp(modifiedRegex, "g");
+
+				line = line.replace(compiledRegex, (match, capturedValue, ...args) => {
 
 					if (settings.ignoreLinks && containsValidLink(line, capturedValue)) {
 						return match;
@@ -726,7 +716,16 @@ async onload() {
 						}
 					}
 
+
 					return match.replace(capturedValue, `[[${capturedValue}]]`);
+
+					const prefixBackslash = match.startsWith("\\");
+					if (prefixBackslash) {
+						return '\\' + ` [[${capturedValue}]]`;
+					} else {
+						return `[[${capturedValue}]]`;
+					}
+
 				});
 			}
 			updatedText += line;
