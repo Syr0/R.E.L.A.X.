@@ -19,12 +19,12 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 		{
 			"isActive": true,
 			"key": "Domains",
-			"regex": "([a-zA-Z0-9\\-\\.]+\\.(?:com|org|net|mil|edu|COM|ORG|NET|MIL|EDU))"
+			"regex": "\\b([a-zA-Z0-9\\-\\.]+\\.(?:com|org|net|mil|edu|COM|ORG|NET|MIL|EDU))"
 		},
 		{
 			"isActive": true,
 			"key": "IP",
-			"regex": "((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))\b"
+			"regex": "\\b((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))\\b"
 		},
 		{
 			"isActive": true,
@@ -95,6 +95,26 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 			"isActive": true,
 			"key": "Markdown _",
 			"regex": "(?:[_](((?:(?!<br>|\\r|\\n)[^_ ]){4,30}))[_])"
+		},
+		{
+			"isActive": true,
+			"key": "Markdown ‘’",
+			"regex": "(?:[‘](((?:(?!<br>|\\r|\\n)[^’ ]){4,30}))[’])"
+		},
+		{
+			"isActive": true,
+			"key": "Windows Forensics",
+			"regex": "([\\w]+.(?:bat|ps1|dll|exe|reg))[\\b]"
+		},
+		{
+			"isActive": true,
+			"key": "Linux Forensics",
+			"regex": "([\\w]+\\.(?:sh|so|conf|tar.gz))[\\b]"
+		},
+		{
+			"isActive": true,
+			"key": "Mac Forensics",
+			"regex": "([\\w]+\\.(?:app|pkg|dmg))[\\b]"
 		},
 		{
 			"isActive": true,
@@ -513,11 +533,13 @@ class RelaxSettingTab extends PluginSettingTab {
 	}
 	resetToDefaults() {
 		this.plugin.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+
 		this.plugin.saveSettings().then(() => {
 			new Notice("Settings have been reset to defaults.");
 			this.display();
 		});
 	}
+
 }
 
 export default class RelaxPlugin extends Plugin {
@@ -684,10 +706,12 @@ export default class RelaxPlugin extends Plugin {
 					continue;
 				}
 
-				const modifiedRegex = `\\?(${regex})`;
-				const compiledRegex = new RegExp(modifiedRegex, "g");
+				const compiledRegex = new RegExp(regex, "g");
+				line = line.replace(compiledRegex, (match, ...args) => {
+					const groups = args.slice(0, -2).filter(g => g !== undefined);
+					const capturedValue = groups[0];
 
-				line = line.replace(compiledRegex, (match, capturedValue, ...args) => {
+					if (!capturedValue) return match;
 
 					if (settings.ignoreLinks && containsValidLink(line, capturedValue)) {
 						return match;
@@ -709,16 +733,16 @@ export default class RelaxPlugin extends Plugin {
 						}
 					}
 
-					const prefixBackslash = match.startsWith("\\");
-					if (prefixBackslash) {
-						return '\\' + ` [[${capturedValue}]]`;
-					} else {
-						return `[[${capturedValue}]]`;
-					}
+					const offset = args[args.length - 2];
+					const precedingChar = offset > 0 ? line[offset - 1] : null;
+					const spaceIfBackslash = precedingChar === '\\' ? ' ' : '';
+
+					return `${spaceIfBackslash}[[${match}]]`;
+
 				});
 			}
-
 			updatedText += line;
+
 			if (index !== lines.length - 1) {
 				updatedText += "\n";
 			}
@@ -727,125 +751,124 @@ export default class RelaxPlugin extends Plugin {
 		return updatedText;
 	}
 
-
 	async processMarkdownContent(action: "removeBrackets" | "addBrackets") {
-			const activeLeaf = this.app.workspace.activeLeaf;
+		const activeLeaf = this.app.workspace.activeLeaf;
 
-			if (!activeLeaf) {
-				new Notice("Please open a markdown file or select a folder");
-				return;
-			}
+		if (!activeLeaf) {
+			new Notice("Please open a markdown file or select a folder");
+			return;
+		}
 
-			const view = activeLeaf.view;
-			if (!view) {
-				new Notice("Unknown item selected. Please select a markdown file or folder");
-				return;
-			}
+		const view = activeLeaf.view;
+		if (!view) {
+			new Notice("Unknown item selected. Please select a markdown file or folder");
+			return;
+		}
 
-			if (view instanceof MarkdownView) {
-				const selection = view.editor.getSelection();
+		if (view instanceof MarkdownView) {
+			const selection = view.editor.getSelection();
 
-				if (selection && selection.trim().length !== 0) {
-					let updatedSelection;
-					if (action === "removeBrackets") {
-						updatedSelection = this.removeBracketsInSelection(selection);
-						new Notice("Removed brackets from selection!");
-					} else {
-						updatedSelection = this.updateSelection(selection, this.settings);
-						new Notice("Added brackets in selection!");
-					}
-					view.editor.replaceSelection(updatedSelection);
-					new Notice(action === "removeBrackets" ? "Removed brackets from selection!" : "Updated content in selection!");
+			if (selection && selection.trim().length !== 0) {
+				let updatedSelection;
+				if (action === "removeBrackets") {
+					updatedSelection = this.removeBracketsInSelection(selection);
+					new Notice("Removed brackets from selection!");
 				} else {
-					if (action === "removeBrackets") {
-						await this.removeBracketsinFile();
-						new Notice("Removed brackets from entire file!");
-					} else {
-						await this.addBracketsForFile();
-						new Notice("Added brackets on entire file!");
-					}
-				}
-			}
-		}
-
-		async removeBrackets() {
-			await this.processMarkdownContent("removeBrackets");
-		}
-
-		async addBrackets() {
-			const activeLeaf = this.app.workspace.activeLeaf;
-
-			if (!activeLeaf) {
-				new Notice("Please open a markdown file or select a folder");
-				return;
-			}
-
-			const view = activeLeaf.view;
-			if (!view) {
-				new Notice("Unknown item selected. Please select a markdown file or folder");
-				return;
-			}
-
-			if (view instanceof MarkdownView) {
-				const editor = view.editor;
-				const selection = editor.getSelection();
-
-				if (selection && selection.trim().length !== 0) {
-					const updatedSelection = this.updateSelection(selection, this.settings);
-					editor.replaceSelection(updatedSelection);
+					updatedSelection = this.updateSelection(selection, this.settings);
 					new Notice("Added brackets in selection!");
+				}
+				view.editor.replaceSelection(updatedSelection);
+				new Notice(action === "removeBrackets" ? "Removed brackets from selection!" : "Updated content in selection!");
+			} else {
+				if (action === "removeBrackets") {
+					await this.removeBracketsinFile();
+					new Notice("Removed brackets from entire file!");
 				} else {
 					await this.addBracketsForFile();
-					new Notice("Updated entire file!");
+					new Notice("Added brackets on entire file!");
 				}
-			} else if (view.focusedItem && view.focusedItem.collapsible) {
-				const folderPath = view.focusedItem.file.path;
-				await this.addBracketsForFolder(folderPath);
-			} else if (view.focusedItem && !view.focusedItem.collapsible) {
-				const filePath = view.focusedItem.file.path;
-				await this.addBracketsForFile(filePath);
-			} else {
-				new Notice("No markdown file or folder is currently selected. Please select one.");
 			}
 		}
+	}
 
-		async addBracketsForFolder(folderPath: string) {
-			const files = this.app.vault.getMarkdownFiles().filter(file => file.path.startsWith(folderPath));
-			const totalFiles = files.length;
-			let processedFiles = 0;
+	async removeBrackets() {
+		await this.processMarkdownContent("removeBrackets");
+	}
 
-			const processingNotice = new Notice(`Processing ${totalFiles} files...`, totalFiles * 1000);
+	async addBrackets() {
+		const activeLeaf = this.app.workspace.activeLeaf;
 
-			const maxConcurrentTasks = 20;
-			const taskQueue = [];
+		if (!activeLeaf) {
+			new Notice("Please open a markdown file or select a folder");
+			return;
+		}
 
-			const processFile = async (file) => {
-				await this.addBracketsForFile(file.path);
-				processedFiles++;
-				processingNotice.setMessage(`Processing file ${processedFiles} of ${totalFiles}`);
-				if (taskQueue.length > 0) {
-					const nextTask = taskQueue.shift();
-					await nextTask();
-				}
-			};
+		const view = activeLeaf.view;
+		if (!view) {
+			new Notice("Unknown item selected. Please select a markdown file or folder");
+			return;
+		}
 
-			const enqueueTask = (file) => {
-				if (taskQueue.length < maxConcurrentTasks) {
-					taskQueue.push(() => processFile(file));
-				} else {
-					processFile(file);
-				}
-			};
+		if (view instanceof MarkdownView) {
+			const editor = view.editor;
+			const selection = editor.getSelection();
 
-			files.forEach(file => enqueueTask(file));
+			if (selection && selection.trim().length !== 0) {
+				const updatedSelection = this.updateSelection(selection, this.settings);
+				editor.replaceSelection(updatedSelection);
+				new Notice("Added brackets in selection!");
+			} else {
+				await this.addBracketsForFile();
+				new Notice("Updated entire file!");
+			}
+		} else if (view.focusedItem && view.focusedItem.collapsible) {
+			const folderPath = view.focusedItem.file.path;
+			await this.addBracketsForFolder(folderPath);
+		} else if (view.focusedItem && !view.focusedItem.collapsible) {
+			const filePath = view.focusedItem.file.path;
+			await this.addBracketsForFile(filePath);
+		} else {
+			new Notice("No markdown file or folder is currently selected. Please select one.");
+		}
+	}
 
-			while (taskQueue.length > 0) {
+	async addBracketsForFolder(folderPath: string) {
+		const files = this.app.vault.getMarkdownFiles().filter(file => file.path.startsWith(folderPath));
+		const totalFiles = files.length;
+		let processedFiles = 0;
+
+		const processingNotice = new Notice(`Processing ${totalFiles} files...`, totalFiles * 1000);
+
+		const maxConcurrentTasks = 20;
+		const taskQueue = [];
+
+		const processFile = async (file) => {
+			await this.addBracketsForFile(file.path);
+			processedFiles++;
+			processingNotice.setMessage(`Processing file ${processedFiles} of ${totalFiles}`);
+			if (taskQueue.length > 0) {
 				const nextTask = taskQueue.shift();
 				await nextTask();
 			}
+		};
 
-			processingNotice.hide();
-			new Notice(`All ${totalFiles} files in the folder processed.`);
+		const enqueueTask = (file) => {
+			if (taskQueue.length < maxConcurrentTasks) {
+				taskQueue.push(() => processFile(file));
+			} else {
+				processFile(file);
+			}
+		};
+
+		files.forEach(file => enqueueTask(file));
+
+		while (taskQueue.length > 0) {
+			const nextTask = taskQueue.shift();
+			await nextTask();
 		}
 
+		processingNotice.hide();
+		new Notice(`All ${totalFiles} files in the folder processed.`);
 	}
+
+}
