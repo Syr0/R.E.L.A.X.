@@ -733,7 +733,12 @@ async onload() {
 						}
 					}
 
-					return match.replace(capturedValue, `[[${capturedValue}]]`);
+					const offset = args[args.length - 2];
+					const precedingChar = offset > 0 ? line[offset - 1] : null;
+					const spaceIfBackslash = precedingChar === '\\' ? ' ' : '';
+
+					return `${spaceIfBackslash}[[${match}]]`;
+
 				});
 			}
 			updatedText += line;
