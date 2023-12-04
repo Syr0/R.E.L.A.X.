@@ -519,7 +519,6 @@ class RelaxSettingTab extends PluginSettingTab {
 							if (this.plugin._settingTabReference) {
 								this.plugin._settingTabReference.display();
 							}
-							new Notice("Settings have been reset to defaults.");
 						}
 					});
 			});
