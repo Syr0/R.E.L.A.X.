@@ -267,7 +267,7 @@ class RelaxSettingTab extends PluginSettingTab {
 					};
 				});
 
-				regexGroups.push({ isActive, groupName, regexes });
+				regexGroups.push({isActive, groupName, regexes});
 			});
 
 			if (this.plugin && this.plugin.settings) {
@@ -371,12 +371,6 @@ class RelaxSettingTab extends PluginSettingTab {
 		}
 	}
 
-	reorderElements() {
-		this.keyValueContainer.querySelectorAll("div").forEach((row) => {
-			row.classList.remove("custom-top");
-		});
-	}
-
 	setHighlighted(highlight: boolean) {
 		this.isHighlited = highlight;
 		if (this.saveButton) {
@@ -388,25 +382,25 @@ class RelaxSettingTab extends PluginSettingTab {
 			}
 		}
 	}
+
 	display() {
-		const { containerEl } = this;
+		const {containerEl} = this;
 		containerEl.empty();
 		this.keyValueContainer = containerEl.createEl("div");
 		this.keyValueContainer.classList.add("flex-column");
 
-
-		function validateContent(content) {
+		const validateContent = (content) => {
 			const regex = /\[\[(.+?)\]\]/g;
 			return !regex.test(content);
-		}
+		};
 
-		function applyValidationStyle(textarea) {
+		const applyValidationStyle = (textarea) => {
 			if (validateContent(textarea.value)) {
 				textarea.classList.toggle("valid-content", validateContent(textarea.value));
 			} else {
 				textarea.classList.toggle("invalid-content", !validateContent(textarea.value));
 			}
-		}
+		};
 
 		document.addEventListener("DOMContentLoaded", (event) => {
 			const modalButton = document.querySelector("#openModalButton");
@@ -423,7 +417,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			});
 		});
 
-		const validateRegexInput = (input: HTMLInputElement) => {
+		const validateRegexInput = (input) => {
 			let errorMsg = "";
 			try {
 				const reg = new RegExp(input.value);
@@ -450,23 +444,26 @@ class RelaxSettingTab extends PluginSettingTab {
 			}
 		};
 
-		const addKeyValue = (key?: string, value?: string, isActive = false) => {
-			const row = this.keyValueContainer.createEl("div");
-			row.classList.add("flex-row");
-
+		const addRegexToGroup = (groupContent, regex) => {
+			const row = groupContent.createEl("div", {cls: 'flex-row'});
 			const dragHandle = row.createEl("span", {className: "drag-handle", text: "☰"});
-			const activeCheckbox = row.createEl("input", {className: "active-checkbox"});
-			activeCheckbox.type = "checkbox";
-			activeCheckbox.checked = isActive;
-			row.appendChild(activeCheckbox);
+			const activeCheckbox = row.createEl("input", {type: "checkbox", className: "active-checkbox"});
+			activeCheckbox.checked = regex.isActive;
 
-			const keyInput = row.createEl("input", {className: "key-input", placeholder: "Description-Key", value: key ?? ""});
-			keyInput.classList.add("key-input-flex");
+			const keyInput = row.createEl("input", {
+				type: "text",
+				className: "key-input-flex",
+				value: regex.key,
+				placeholder: "Description-Key"
+			});
+			const valueInput = row.createEl("input", {
+				type: "text",
+				className: "value-input-flex",
+				value: regex.regex,
+				placeholder: "Regexp"
+			});
 
-			const valueInput = row.createEl("input", {className: "value-input", placeholder: "Regexp", value: value ?? ""});
-			valueInput.classList.add("value-input-flex");
-
-			row.createEl("button", {text: "Delete", className: `delete-button-${key ?? Date.now()}`})
+			row.createEl("button", {text: "Delete", className: "delete-button"})
 				.addEventListener("click", () => {
 					row.remove();
 					this.updateRegexOrderFromDOM();
@@ -475,19 +472,20 @@ class RelaxSettingTab extends PluginSettingTab {
 			if (dragHandle) this.makeDraggable(row, dragHandle);
 			valueInput.addEventListener("input", () => validateRegexInput(valueInput));
 		};
-		const addGroupUI = (group: RegexGroup) => {
-			const groupContainer = this.keyValueContainer.createEl("div", { cls: 'regex-group-container group-container' });
+
+		const addGroupUI = (group) => {
+			const groupContainer = this.keyValueContainer.createEl("div", {cls: 'regex-group-container group-container'});
 			groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
 			groupContainer.style.padding = "10px";
 			groupContainer.style.marginBottom = "10px";
 
-			const groupHeader = groupContainer.createEl("div", { cls: 'regex-group-header' });
-			const dragHandle = groupHeader.createEl("span", { className: "drag-handle", text: "☰" });
-			const collapseIcon = groupHeader.createEl("span", { cls: 'collapse-icon', text: group.isActive ? '▼' : '►' });
-			const groupActiveCheckbox = groupHeader.createEl("input", { type: 'checkbox' });
+			const groupHeader = groupContainer.createEl("div", {cls: 'regex-group-header'});
+			const dragHandle = groupHeader.createEl("span", {className: "drag-handle", text: "☰"});
+			const collapseIcon = groupHeader.createEl("span", {cls: 'collapse-icon', text: group.isActive ? '▼' : '►'});
+			const groupActiveCheckbox = groupHeader.createEl("input", {type: 'checkbox'});
 			groupActiveCheckbox.checked = group.isActive;
 
-			const groupNameEl = groupHeader.createEl("span", { cls: 'regex-group-name', text: group.groupName });
+			const groupNameEl = groupHeader.createEl("span", {cls: 'regex-group-name', text: group.groupName});
 			groupNameEl.addEventListener("click", () => {
 				const newGroupName = prompt("Edit Group Name", groupNameEl.textContent);
 				if (newGroupName) groupNameEl.textContent = newGroupName;
@@ -495,15 +493,10 @@ class RelaxSettingTab extends PluginSettingTab {
 				this.setHighlighted(true);
 			});
 
-			const groupContent = groupContainer.createEl("div", { cls: 'regex-group-content' });
+			const groupContent = groupContainer.createEl("div", {cls: 'regex-group-content'});
 			groupContent.style.display = group.isActive ? "block" : "none";
 
 			groupHeader.addEventListener("click", () => {
-				if (group.isActive) {
-					groupContainer.classList.add("active");
-				} else {
-					groupContainer.classList.remove("active");
-				}
 				group.isActive = !group.isActive;
 				groupActiveCheckbox.checked = group.isActive;
 				groupContent.style.display = group.isActive ? "block" : "none";
@@ -514,12 +507,10 @@ class RelaxSettingTab extends PluginSettingTab {
 
 			if (dragHandle) this.makeDraggable(groupContainer, dragHandle);
 
-			group.regexes.forEach(regex => {
-				addKeyValue(groupContent, regex.key, regex.regex, regex.isActive);
-			});
+			group.regexes.forEach(regex => addRegexToGroup(groupContent, regex));
 		};
 
-		const addGroupButton = containerEl.createEl("button", { text: "Add Group" });
+		const addGroupButton = containerEl.createEl("button", {text: "Add Group"});
 		addGroupButton.addEventListener("click", () => {
 			this.plugin.settings.regexGroups.push({
 				isActive: true,
@@ -529,97 +520,108 @@ class RelaxSettingTab extends PluginSettingTab {
 			this.display();
 		});
 
-
 		this.plugin.settings.regexGroups.forEach(group => addGroupUI(group));
 
 		containerEl.createEl("button", {text: "Add Regexp"}).addEventListener("click", () => addKeyValue());
 
-		for (const {isActive, key, regex} of this.plugin.settings.regexPairs) {
-			addKeyValue(key, regex, isActive);
-		}
+		const addKeyValue = (key?: string, value?: string, isActive = false) => {
+			const row = this.keyValueContainer.createEl("div");
+			row.classList.add("flex-row");
 
-		new Setting(containerEl)
-			.setName("Ignore links")
-			.addToggle(toggle => {
-				toggle
-					.setValue(this.plugin.settings.ignoreLinks ?? true)
-					.onChange(async value => {
-						this.plugin.settings.ignoreLinks = value;
-						await this.plugin.saveSettings();
-					})
-					.setTooltip("Do not modify Links, preventing to handle the same data over and over again.")
-				;
-			});
-		new Setting(containerEl)
-			.setName("Ignore URLs")
-			.addToggle(toggle => {
-				toggle
-					.setValue(this.plugin.settings.ignoreURLs ?? true)
-					.onChange(async value => {
-						this.plugin.settings.ignoreURLs = value;
-						await this.plugin.saveSettings();
-					})
-					.setTooltip("Do not modify URLs, so they do keep working.")
-				;
-			});
-		new Setting(containerEl)
-			.setName("Defang URLs")
-			.addToggle(toggle => {
-				toggle
-					.setValue(this.plugin.settings.defangURLs ?? true)
-					.onChange(async value => {
-						this.plugin.settings.defangURLs = value;
-						await this.plugin.saveSettings();
-					})
-					.setTooltip("https[:]// -> https://")
-				;
-			});
-		new Setting(containerEl)
-			.setName("Ignore code blocks")
-			.addToggle(toggle => {
-				toggle
-					.setValue(this.plugin.settings.ignoreCodeBlocks ?? false)
-					.onChange(async value => {
-						this.plugin.settings.ignoreCodeBlocks = value;
-						await this.plugin.saveSettings();
-					})
-					.setTooltip("Ignore content within code blocks when linking regexes.");
-			});
+			const dragHandle = row.createEl("span", {className: "drag-handle", text: "☰"});
+			const activeCheckbox = row.createEl("input", {className: "active-checkbox"});
+			activeCheckbox.type = "checkbox";
+			activeCheckbox.checked = isActive;
+			row.appendChild(activeCheckbox);
 
-		new Setting(containerEl)
-			.setName("Save")
-			.addButton(button => {
-				button.setButtonText("Save")
-					.onClick(() => {
-						this.saveChanges();
-					});
-				this.saveButton = button.buttonEl;
-			});
+			for (const {isActive, key, regex} of this.plugin.settings.regexPairs) {
+				addKeyValue(key, regex, isActive);
+			}
 
-		const updateHighlightedState = () => this.setHighlighted(true);
-		this.keyValueContainer.addEventListener("input", updateHighlightedState);
-		this.keyValueContainer.addEventListener("change", updateHighlightedState);
+			new Setting(containerEl)
+				.setName("Ignore links")
+				.addToggle(toggle => {
+					toggle
+						.setValue(this.plugin.settings.ignoreLinks ?? true)
+						.onChange(async value => {
+							this.plugin.settings.ignoreLinks = value;
+							await this.plugin.saveSettings();
+						})
+						.setTooltip("Do not modify Links, preventing to handle the same data over and over again.")
+					;
+				});
+			new Setting(containerEl)
+				.setName("Ignore URLs")
+				.addToggle(toggle => {
+					toggle
+						.setValue(this.plugin.settings.ignoreURLs ?? true)
+						.onChange(async value => {
+							this.plugin.settings.ignoreURLs = value;
+							await this.plugin.saveSettings();
+						})
+						.setTooltip("Do not modify URLs, so they do keep working.")
+					;
+				});
+			new Setting(containerEl)
+				.setName("Defang URLs")
+				.addToggle(toggle => {
+					toggle
+						.setValue(this.plugin.settings.defangURLs ?? true)
+						.onChange(async value => {
+							this.plugin.settings.defangURLs = value;
+							await this.plugin.saveSettings();
+						})
+						.setTooltip("https[:]// -> https://")
+					;
+				});
+			new Setting(containerEl)
+				.setName("Ignore code blocks")
+				.addToggle(toggle => {
+					toggle
+						.setValue(this.plugin.settings.ignoreCodeBlocks ?? false)
+						.onChange(async value => {
+							this.plugin.settings.ignoreCodeBlocks = value;
+							await this.plugin.saveSettings();
+						})
+						.setTooltip("Ignore content within code blocks when linking regexes.");
+				});
+
+			new Setting(containerEl)
+				.setName("Save")
+				.addButton(button => {
+					button.setButtonText("Save")
+						.onClick(() => {
+							this.saveChanges();
+						});
+					this.saveButton = button.buttonEl;
+				});
+
+			const updateHighlightedState = () => this.setHighlighted(true);
+			this.keyValueContainer.addEventListener("input", updateHighlightedState);
+			this.keyValueContainer.addEventListener("change", updateHighlightedState);
 
 
-		new Setting(containerEl)
-			.setName("Reset defaults")
-			.addButton(button => {
-				button.setButtonText("Reset")
-					.onClick(() => {
-						const resetConfirm = confirm("Are you sure you want to reset to default settings?");
-						if (resetConfirm) {
-							this.resetToDefaults();
+			new Setting(containerEl)
+				.setName("Reset defaults")
+				.addButton(button => {
+					button.setButtonText("Reset")
+						.onClick(() => {
+							const resetConfirm = confirm("Are you sure you want to reset to default settings?");
+							if (resetConfirm) {
+								this.resetToDefaults();
 
-							if (this.plugin._settingTabReference) {
-								this.plugin._settingTabReference.display();
+								if (this.plugin._settingTabReference) {
+									this.plugin._settingTabReference.display();
+								}
 							}
-						}
-					});
-			});
-		const updateHighlitedState = () => this.setHighlighted(true);
-		this.keyValueContainer.addEventListener("input", updateHighlitedState);
-		this.keyValueContainer.addEventListener("change", updateHighlitedState);
+						});
+				});
+			const updateHighlitedState = () => this.setHighlighted(true);
+			this.keyValueContainer.addEventListener("input", updateHighlitedState);
+			this.keyValueContainer.addEventListener("change", updateHighlitedState);
+		}
 	}
+
 	resetToDefaults() {
 		this.plugin.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 
@@ -628,7 +630,6 @@ class RelaxSettingTab extends PluginSettingTab {
 			this.display();
 		});
 	}
-
 }
 
 export default class RelaxPlugin extends Plugin {
