@@ -235,7 +235,7 @@ class RelaxSettingTab extends PluginSettingTab {
 	plugin: RelaxPlugin;
 	keyValueContainer: HTMLDivElement;
 	saveButton: HTMLButtonElement;
-	isHighlited = false;
+	isHighlighted = false;
 	dragElement = null;
 	currentIndex = null;
 	newIndex = null;
@@ -410,12 +410,11 @@ class RelaxSettingTab extends PluginSettingTab {
 			return !regex.test(content);
 		};
 
-		function addStandaloneRegexUI(pair: { isActive: boolean; key: string; regex: string }) {
-			const row = this.keyValueContainer.createEl("div", { cls: 'flex-row' });
 
+		if (this.plugin.settings.regexPairs && Array.isArray(this.plugin.settings.regexPairs)) {
+			this.plugin.settings.regexPairs.forEach(pair => this.addStandaloneRegexUI(pair));
 		}
 
-		this.plugin.settings.regexPairs.forEach(pair => addStandaloneRegexUI(pair));
 		const applyValidationStyle = (textarea) => {
 			if (validateContent(textarea.value)) {
 				textarea.classList.toggle("valid-content", validateContent(textarea.value));
@@ -495,6 +494,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			valueInput.addEventListener("input", () => validateRegexInput(valueInput));
 		};
 
+
 		const addGroupUI = (group) => {
 			const groupContainer = this.keyValueContainer.createEl("div", {cls: 'regex-group-container group-container'});
 			groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
@@ -507,6 +507,18 @@ class RelaxSettingTab extends PluginSettingTab {
 			const groupActiveCheckbox = groupHeader.createEl("input", {type: 'checkbox'});
 			groupActiveCheckbox.checked = group.isActive;
 			groupContainer.insertBefore(groupHeader, groupContainer.firstChild);
+
+			groupActiveCheckbox.addEventListener("change", () => {
+				group.isActive = groupActiveCheckbox.checked;
+				groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
+				this.setHighlighted(true);
+			});
+
+			collapseIcon.addEventListener("click", () => {
+				groupContent.style.display = groupContent.style.display === "none" ? "block" : "none";
+				collapseIcon.textContent = groupContent.style.display === "block" ? '▼' : '►';
+				this.setHighlighted(true);
+			});
 
 			const groupNameEl = groupHeader.createEl("span", {cls: 'regex-group-name', text: group.groupName});
 			groupNameEl.setAttribute("contenteditable", "true");
@@ -521,24 +533,13 @@ class RelaxSettingTab extends PluginSettingTab {
 				}
 			});
 
-
-
 			const groupContent = groupContainer.createEl("div", {cls: 'regex-group-content'});
 			groupContent.style.display = group.isActive ? "block" : "none";
 
-			collapseIcon.addEventListener("click", () => {
-				group.isActive = !group.isActive;
-				groupActiveCheckbox.checked = group.isActive;
-				groupContent.style.display = group.isActive ? "block" : "none";
-				collapseIcon.textContent = group.isActive ? '▼' : '►';
-				groupContainer.style.border = group.isActive ? "1px solid accent-color" : "1px solid #ccc";
-				this.setHighlighted(true);
-			});
-
 			if (dragHandle) this.makeDraggable(groupContainer, dragHandle);
-
 			group.regexes.forEach(regex => addRegexToGroup(groupContent, regex));
 		};
+
 
 		const addGroupButton = containerEl.createEl("button", {text: "Add Group"});
 		addGroupButton.addEventListener("click", () => {
@@ -661,6 +662,39 @@ class RelaxSettingTab extends PluginSettingTab {
 			new Notice("Settings have been reset to defaults.");
 			this.display();
 		});
+	}
+
+	private addStandaloneRegexUI(pair) {
+		const row = this.keyValueContainer.createEl("div", { cls: 'flex-row' });
+
+		const dragHandle = row.createEl("span", { className: "drag-handle", text: "☰" });
+
+		const activeCheckbox = row.createEl("input", { type: "checkbox", className: "active-checkbox" });
+		activeCheckbox.checked = pair.isActive;
+
+		const keyInput = row.createEl("input", {
+			type: "text",
+			className: "key-input-flex",
+			value: pair.key,
+			placeholder: "Description-Key"
+		});
+
+		const valueInput = row.createEl("input", {
+			type: "text",
+			className: "value-input-flex",
+			value: pair.regex,
+			placeholder: "Regexp"
+		});
+
+		const deleteButton = row.createEl("button", { text: "Delete", className: "delete-button" });
+		deleteButton.addEventListener("click", () => {
+			row.remove();
+			this.updateRegexOrderFromDOM();
+		});
+
+		// Make the row draggable
+		if (dragHandle) this.makeDraggable(row, dragHandle);
+
 	}
 }
 
