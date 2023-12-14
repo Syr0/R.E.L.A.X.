@@ -384,7 +384,7 @@ class RelaxSettingTab extends PluginSettingTab {
 	}
 
 	display() {
-		const {containerEl} = this;
+		const { containerEl } = this;
 		containerEl.empty();
 		this.keyValueContainer = containerEl.createEl("div");
 		this.keyValueContainer.classList.add("flex-column");
@@ -520,23 +520,15 @@ class RelaxSettingTab extends PluginSettingTab {
 			this.display();
 		});
 
-		this.plugin.settings.regexGroups.forEach(group => addGroupUI(group));
-
-		containerEl.createEl("button", {text: "Add Regexp"}).addEventListener("click", () => addKeyValue());
-
-		const addKeyValue = (key?: string, value?: string, isActive = false) => {
+		const addKeyValue = (key, value, isActive) => {
 			const row = this.keyValueContainer.createEl("div");
 			row.classList.add("flex-row");
 
-			const dragHandle = row.createEl("span", {className: "drag-handle", text: "☰"});
-			const activeCheckbox = row.createEl("input", {className: "active-checkbox"});
+			const dragHandle = row.createEl("span", { className: "drag-handle", text: "☰" });
+			const activeCheckbox = row.createEl("input", { className: "active-checkbox" });
 			activeCheckbox.type = "checkbox";
 			activeCheckbox.checked = isActive;
 			row.appendChild(activeCheckbox);
-
-			for (const {isActive, key, regex} of this.plugin.settings.regexPairs) {
-				addKeyValue(key, regex, isActive);
-			}
 
 			new Setting(containerEl)
 				.setName("Ignore links")
@@ -620,6 +612,19 @@ class RelaxSettingTab extends PluginSettingTab {
 			this.keyValueContainer.addEventListener("input", updateHighlitedState);
 			this.keyValueContainer.addEventListener("change", updateHighlitedState);
 		}
+
+		this.plugin.settings.regexGroups.forEach(group => addGroupUI(group));
+
+		// Check if regexPairs exists and then iterate
+		if (this.plugin.settings.regexPairs && Array.isArray(this.plugin.settings.regexPairs)) {
+			this.plugin.settings.regexPairs.forEach(pair => {
+				addKeyValue(pair.key, pair.regex, pair.isActive);
+			});
+		}
+
+		// Creating "Add Regexp" button
+		containerEl.createEl("button", { text: "Add Regexp" }).addEventListener("click", () => addKeyValue());
+
 	}
 
 	resetToDefaults() {
