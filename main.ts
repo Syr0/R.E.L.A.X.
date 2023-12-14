@@ -8,6 +8,7 @@ interface RegexGroup {
 
 interface RelaxPluginSettings {
 	regexGroups: Array<RegexGroup>;
+	regexPairs: Array<{ isActive: boolean, key: string, regex: string }>;
 	ignoreLinks?: boolean;
 	ignoreURLs?: boolean;
 	defangURLs?: boolean;
@@ -15,6 +16,7 @@ interface RelaxPluginSettings {
 }
 
 const DEFAULT_SETTINGS: RelaxPluginSettings = {
+	regexPairs: [],
 	regexGroups: [
 		{
 			isActive: true,
@@ -276,6 +278,20 @@ class RelaxSettingTab extends PluginSettingTab {
 			} else {
 				console.error("Plugin or settings not available");
 			}
+
+			const regexPairs = Array.from(this.keyValueContainer.querySelectorAll(".standalone-regex-row")).map(row => {
+				const keyInput = row.querySelector("input[placeholder='Description-Key']");
+				const valueInput = row.querySelector("input[placeholder='Regexp']");
+				const regexActiveCheckbox = row.querySelector("input[type='checkbox']");
+				return {
+					isActive: regexActiveCheckbox ? regexActiveCheckbox.checked : false,
+					key: keyInput ? keyInput.value : "",
+					regex: valueInput ? valueInput.value : ""
+				};
+			});
+
+			this.plugin.settings.regexPairs = regexPairs;
+			this.plugin.saveSettings();
 		};
 
 
@@ -394,6 +410,12 @@ class RelaxSettingTab extends PluginSettingTab {
 			return !regex.test(content);
 		};
 
+		function addStandaloneRegexUI(pair: { isActive: boolean; key: string; regex: string }) {
+			const row = this.keyValueContainer.createEl("div", { cls: 'flex-row' });
+
+		}
+
+		this.plugin.settings.regexPairs.forEach(pair => addStandaloneRegexUI(pair));
 		const applyValidationStyle = (textarea) => {
 			if (validateContent(textarea.value)) {
 				textarea.classList.toggle("valid-content", validateContent(textarea.value));
@@ -484,19 +506,27 @@ class RelaxSettingTab extends PluginSettingTab {
 			const collapseIcon = groupHeader.createEl("span", {cls: 'collapse-icon', text: group.isActive ? '▼' : '►'});
 			const groupActiveCheckbox = groupHeader.createEl("input", {type: 'checkbox'});
 			groupActiveCheckbox.checked = group.isActive;
+			groupContainer.insertBefore(groupHeader, groupContainer.firstChild);
 
 			const groupNameEl = groupHeader.createEl("span", {cls: 'regex-group-name', text: group.groupName});
-			groupNameEl.addEventListener("click", () => {
-				const newGroupName = prompt("Edit Group Name", groupNameEl.textContent);
-				if (newGroupName) groupNameEl.textContent = newGroupName;
-				group.groupName = newGroupName;
-				this.setHighlighted(true);
+			groupNameEl.setAttribute("contenteditable", "true");
+			groupNameEl.addEventListener("blur", (event) => {
+				const newName = groupNameEl.textContent.trim();
+				if (newName.length > 0 && newName !== group.groupName) {
+					group.groupName = newName;
+					this.updateRegexOrderFromDOM();
+					new Notice("Group name updated.");
+				} else {
+					groupNameEl.textContent = group.groupName;
+				}
 			});
+
+
 
 			const groupContent = groupContainer.createEl("div", {cls: 'regex-group-content'});
 			groupContent.style.display = group.isActive ? "block" : "none";
 
-			groupHeader.addEventListener("click", () => {
+			collapseIcon.addEventListener("click", () => {
 				group.isActive = !group.isActive;
 				groupActiveCheckbox.checked = group.isActive;
 				groupContent.style.display = group.isActive ? "block" : "none";
@@ -521,7 +551,7 @@ class RelaxSettingTab extends PluginSettingTab {
 		});
 
 		const addKeyValue = (key, value, isActive) => {
-			const row = this.keyValueContainer.createEl("div");
+			const row = this.keyValueContainer.createEl("div", { cls: 'flex-row' });
 			row.classList.add("flex-row");
 
 			const dragHandle = row.createEl("span", { className: "drag-handle", text: "☰" });
@@ -592,7 +622,6 @@ class RelaxSettingTab extends PluginSettingTab {
 			this.keyValueContainer.addEventListener("input", updateHighlightedState);
 			this.keyValueContainer.addEventListener("change", updateHighlightedState);
 
-
 			new Setting(containerEl)
 				.setName("Reset defaults")
 				.addButton(button => {
@@ -615,14 +644,12 @@ class RelaxSettingTab extends PluginSettingTab {
 
 		this.plugin.settings.regexGroups.forEach(group => addGroupUI(group));
 
-		// Check if regexPairs exists and then iterate
 		if (this.plugin.settings.regexPairs && Array.isArray(this.plugin.settings.regexPairs)) {
 			this.plugin.settings.regexPairs.forEach(pair => {
 				addKeyValue(pair.key, pair.regex, pair.isActive);
 			});
 		}
 
-		// Creating "Add Regexp" button
 		containerEl.createEl("button", { text: "Add Regexp" }).addEventListener("click", () => addKeyValue());
 
 	}
