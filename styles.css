@@ -19,7 +19,9 @@
 	background-color: #f0f0f0;
 }
 .keyValueContainer {
-	gap: 10px;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
 }
 .keyValueContainer > div {
 	gap: 10px;
@@ -63,4 +65,17 @@
 .invalid-border {
 	border: 2px solid red;
 }
-
+.group-container {
+	max-width: 750px;
+}
+.regex-group-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.regex-group-container {
+	flex: 1;
+}
+.regex-group-container.active {
+	border: 1px solid var(--interactive-accent);
+}

@@ -1,7 +1,13 @@
 import {App, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile} from 'obsidian';
 
+interface RegexGroup {
+	isActive: boolean;
+	groupName: string;
+	regexes: Array<{ isActive: boolean, key: string, regex: string }>;
+}
+
 interface RelaxPluginSettings {
-	regexPairs: Array<{ isActive: boolean, key: string, regex: string, }>;
+	regexGroups: Array<RegexGroup>;
 	ignoreLinks?: boolean;
 	ignoreURLs?: boolean;
 	defangURLs?: boolean;
@@ -9,207 +15,212 @@ interface RelaxPluginSettings {
 }
 
 const DEFAULT_SETTINGS: RelaxPluginSettings = {
-	"regexPairs": [
-
+	regexGroups: [
 		{
-			"isActive": true,
-			"key": "eMail",
-			"regex": "([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,})"
-		},
-		{
-			"isActive": true,
-			"key": "Domains",
-			"regex": "\\b([a-zA-Z0-9\\-\\.]+\\.(?:com|org|net|mil|edu|COM|ORG|NET|MIL|EDU))"
-		},
-		{
-			"isActive": true,
-			"key": "IP",
-			"regex": "\\b((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))\\b"
-		},
-		{
-			"isActive": true,
-			"key": "GUID",
-			"regex": "([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})"
-		},
-		{
-			"isActive": true,
-			"key": "SHA256",
-			"regex": "\\b([a-fA-F0-9]{64})\\b"
-		},
-		{
-			"isActive": true,
-			"key": "JARM",
-			"regex": "\\b([a-fA-F0-9]{62})\\b"
-		},
-		{
-			"isActive": true,
-			"key": "SHA1",
-			"regex": "\\b([a-fA-F0-9]{40})\\b"
-		},
-		{
-			"isActive": true,
-			"key": "MD5",
-			"regex": "\\b([a-fA-F0-9]{32})\\b"
-		},
-		{
-			"isActive": true,
-			"key": "Bitcoin",
-			"regex": "\\b([13]{1}[a-km-zA-HJ-NP-Z1-9]{26,33}|bc1[a-z0-9]{39,59})\\b"
-		},
-		{
-			"isActive": true,
-			"key": "Date",
-			"regex": "((?:0[1-9]|[12][0-9]|3[01])[\\\\\\/\\.-](?:0[1-9]|1[012])[\\\\\\/\\.-](?:19|20|)\\d\\d)"
-		},
-		{
-			"isActive": true,
-			"key": "Windows Usernames",
-			"regex": "\\\\Users\\\\+(?!(?:Public|Administrator)\\\\)([^\\\\]+)\\\\"
-		},
-		{
-			"isActive": true,
-			"key": "Markdown ´",
-			"regex": "(?:[´](((?:(?!<br>|\\r|\\n)[^´ ]){4,30}))[´])"
-		},
-		{
-			"isActive": true,
-			"key": "Markdown '",
-			"regex": "(?:['](((?:(?!<br>|\\r|\\n)[^' ]){4,30}))['])"
-		},
-		{
-			"isActive": true,
-			"key": "Markdown ‘",
-			"regex": "(?:[‘](((?:(?!<br>|\\r|\\n)[^‘ ]){4,30}))[‘])"
-		},
-		{
-			"isActive": true,
-			"key": "Markdown ’",
-			"regex": "(?:[’](((?:(?!<br>|\\r|\\n)[^’ ]){4,30}))[’])"
-		},
-		{
-			"isActive": true,
-			"key": "Markdown \"",
-			"regex": "(?:[\"„″”](((?:(?!<br>|\\r|\\n)[^\"″” ]){4,30}))[\"″”])"
-		},
-		{
-			"isActive": true,
-			"key": "Markdown _",
-			"regex": "(?:[_](((?:(?!<br>|\\r|\\n)[^_ ]){4,30}))[_])"
-		},
-		{
-			"isActive": true,
-			"key": "Markdown ‘’",
-			"regex": "(?:[‘](((?:(?!<br>|\\r|\\n)[^’ ]){4,30}))[’])"
-		},
-		{
-			"isActive": true,
-			"key": "Windows Forensics",
-			"regex": "([\\w]+.(?:bat|ps1|dll|exe|reg))[\\b]"
-		},
-		{
-			"isActive": true,
-			"key": "Linux Forensics",
-			"regex": "([\\w]+\\.(?:sh|so|conf|tar.gz))[\\b]"
-		},
-		{
-			"isActive": true,
-			"key": "Mac Forensics",
-			"regex": "([\\w]+\\.(?:app|pkg|dmg))[\\b]"
-		},
-		{
-			"isActive": true,
-			"key": "Signal Frequencies",
-			"regex": "(\\b[0-9]{1,4}(?:\\.\\d{1,4})?\\s?(Hz|kHz|MHz|GHz)\\b)"
-		},
-		{
-			"isActive": true,
-			"key": "BibTeX Entries",
-			"regex": "@(article|book|inbook|conference|inproceedings){([^}]+)}"
-		},
-		{
-			"isActive": true,
-			"key": "GPS Coordinates",
-			"regex": "\\b[+-]?[0-9]{1,2}\\.[0-9]+,\\s*[+-]?[0-9]{1,3}\\.[0-9]+\\b"
-		},
-		{
-			"isActive": true,
-			"key": "ISBN Numbers",
-			"regex": "\\bISBN\\s?(?:-?13|-10)?:?\\s?[0-9-]{10,17}\\b"
-		},
-		{
-			"isActive": true,
-			"key": "Camera Settings",
-			"regex": "\\bISO\\s?[0-9]+|f/[0-9.]+|1/[0-9]+\\s?sec\\b"
-		},
-		{
-			"isActive": true,
-			"key": "Historical Dates",
-			"regex": "\\b(?:[0-9]{1,4} (AD|BC)|[0-9]{1,4}th century)\\b"
-		},
-		{
-			"isActive": true,
-			"key": "Processor Specs",
-			"regex": "\\bIntel Core i[3579]-[0-9]{4}[HQGU]K?|AMD Ryzen [3579] [0-9]{4}X?\\b"
-		},
-		{
-			"isActive": true,
-			"key": "Images",
-			"regex": "([\\w]+\\.(?:jpg|jpeg|png|gif|bmp|tiff))[\\b]"
-		},
-		{
-			"isActive": true,
-			"key": "Movies",
-			"regex": "([\\w]+\\.(?:mp4|avi|mkv|mov|wmv))[\\b]"
-		},
-		{
-			"isActive": true,
-			"key": "Audio",
-			"regex": "([\\w]+\\.(?:mp3|wav|aac|flac))[\\b]"
-		},
-		{
-			"isActive": false,
-			"key": "Harmless Files",
-			"regex": "([\\w]+\\.(?:txt|asc|csv|log|md))[\\b]"
-		},
-		{
-			"isActive": false,
-			"key": "Base64 Strings",
-			"regex": "([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?"
-		},
-		{
-			"isActive": false,
-			"key": "Script Language File",
-			"regex": "([\\w]+\\.(?:py|js|java|cs|cpp|rb|go|php))[\\b]"
-		},
-		{
-			"isActive": false,
-			"key": "Chord Progressions",
-			"regex": "\\b((?:C|Dm|Em|F|G|Am|Bdim)(?:\\s->\\s(?:C|Dm|Em|F|G|Am|Bdim))*)\\b"
-		},
-		{
-			"isActive": false,
-			"key": "Hex Colors",
-			"regex": "#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})"
-		},
-		{
-			"isActive": false,
-			"key": "Chemical Elements",
-			"regex": "\\b(?:H|He|Li|Be|B|C|N|O|F|Ne|Na|Mg|Al|Si|P|S|Cl|Ar|K|Ca)\\b"
-		},
-		{
-			"isActive": false,
-			"key": "Social Media Hashtags",
-			"regex": "#[A-Za-z0-9_]+"
-		},
-		{
-			"isActive": false,
-			"key": "Academic Citations",
-			"regex": "\\b\\([A-Za-z]+,\\s[0-9]{4}\\)\\b"
-		},
-		{
-			"isActive": false,
-			"key": "Temperature Readings",
-			"regex": "\\b-?[0-9]+\\s?(°C|°F|K)\\b"
+			isActive: true,
+			groupName: "Email and Domains",
+			regexes: [
+				{
+					"isActive": true,
+					"key": "eMail",
+					"regex": "([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,})"
+				},
+				{
+					"isActive": true,
+					"key": "Domains",
+					"regex": "\\b([a-zA-Z0-9\\-\\.]+\\.(?:com|org|net|mil|edu|COM|ORG|NET|MIL|EDU))"
+				},
+				{
+					"isActive": true,
+					"key": "IP",
+					"regex": "\\b((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))\\b"
+				},
+				{
+					"isActive": true,
+					"key": "GUID",
+					"regex": "([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})"
+				},
+				{
+					"isActive": true,
+					"key": "SHA256",
+					"regex": "\\b([a-fA-F0-9]{64})\\b"
+				},
+				{
+					"isActive": true,
+					"key": "JARM",
+					"regex": "\\b([a-fA-F0-9]{62})\\b"
+				},
+				{
+					"isActive": true,
+					"key": "SHA1",
+					"regex": "\\b([a-fA-F0-9]{40})\\b"
+				},
+				{
+					"isActive": true,
+					"key": "MD5",
+					"regex": "\\b([a-fA-F0-9]{32})\\b"
+				},
+				{
+					"isActive": true,
+					"key": "Bitcoin",
+					"regex": "\\b([13]{1}[a-km-zA-HJ-NP-Z1-9]{26,33}|bc1[a-z0-9]{39,59})\\b"
+				},
+				{
+					"isActive": true,
+					"key": "Date",
+					"regex": "((?:0[1-9]|[12][0-9]|3[01])[\\\\\\/\\.-](?:0[1-9]|1[012])[\\\\\\/\\.-](?:19|20|)\\d\\d)"
+				},
+				{
+					"isActive": true,
+					"key": "Windows Usernames",
+					"regex": "\\\\Users\\\\+(?!(?:Public|Administrator)\\\\)([^\\\\]+)\\\\"
+				},
+				{
+					"isActive": true,
+					"key": "Markdown ´",
+					"regex": "(?:[´](((?:(?!<br>|\\r|\\n)[^´ ]){4,30}))[´])"
+				},
+				{
+					"isActive": true,
+					"key": "Markdown '",
+					"regex": "(?:['](((?:(?!<br>|\\r|\\n)[^' ]){4,30}))['])"
+				},
+				{
+					"isActive": true,
+					"key": "Markdown ‘",
+					"regex": "(?:[‘](((?:(?!<br>|\\r|\\n)[^‘ ]){4,30}))[‘])"
+				},
+				{
+					"isActive": true,
+					"key": "Markdown ’",
+					"regex": "(?:[’](((?:(?!<br>|\\r|\\n)[^’ ]){4,30}))[’])"
+				},
+				{
+					"isActive": true,
+					"key": "Markdown \"",
+					"regex": "(?:[\"„″”](((?:(?!<br>|\\r|\\n)[^\"″” ]){4,30}))[\"″”])"
+				},
+				{
+					"isActive": true,
+					"key": "Markdown _",
+					"regex": "(?:[_](((?:(?!<br>|\\r|\\n)[^_ ]){4,30}))[_])"
+				},
+				{
+					"isActive": true,
+					"key": "Markdown ‘’",
+					"regex": "(?:[‘](((?:(?!<br>|\\r|\\n)[^’ ]){4,30}))[’])"
+				},
+				{
+					"isActive": true,
+					"key": "Windows Forensics",
+					"regex": "([\\w]+.(?:bat|ps1|dll|exe|reg))[\\b]"
+				},
+				{
+					"isActive": true,
+					"key": "Linux Forensics",
+					"regex": "([\\w]+\\.(?:sh|so|conf|tar.gz))[\\b]"
+				},
+				{
+					"isActive": true,
+					"key": "Mac Forensics",
+					"regex": "([\\w]+\\.(?:app|pkg|dmg))[\\b]"
+				},
+				{
+					"isActive": true,
+					"key": "Signal Frequencies",
+					"regex": "(\\b[0-9]{1,4}(?:\\.\\d{1,4})?\\s?(Hz|kHz|MHz|GHz)\\b)"
+				},
+				{
+					"isActive": true,
+					"key": "BibTeX Entries",
+					"regex": "@(article|book|inbook|conference|inproceedings){([^}]+)}"
+				},
+				{
+					"isActive": true,
+					"key": "GPS Coordinates",
+					"regex": "\\b[+-]?[0-9]{1,2}\\.[0-9]+,\\s*[+-]?[0-9]{1,3}\\.[0-9]+\\b"
+				},
+				{
+					"isActive": true,
+					"key": "ISBN Numbers",
+					"regex": "\\bISBN\\s?(?:-?13|-10)?:?\\s?[0-9-]{10,17}\\b"
+				},
+				{
+					"isActive": true,
+					"key": "Camera Settings",
+					"regex": "\\bISO\\s?[0-9]+|f/[0-9.]+|1/[0-9]+\\s?sec\\b"
+				},
+				{
+					"isActive": true,
+					"key": "Historical Dates",
+					"regex": "\\b(?:[0-9]{1,4} (AD|BC)|[0-9]{1,4}th century)\\b"
+				},
+				{
+					"isActive": true,
+					"key": "Processor Specs",
+					"regex": "\\bIntel Core i[3579]-[0-9]{4}[HQGU]K?|AMD Ryzen [3579] [0-9]{4}X?\\b"
+				},
+				{
+					"isActive": true,
+					"key": "Images",
+					"regex": "([\\w]+\\.(?:jpg|jpeg|png|gif|bmp|tiff))[\\b]"
+				},
+				{
+					"isActive": true,
+					"key": "Movies",
+					"regex": "([\\w]+\\.(?:mp4|avi|mkv|mov|wmv))[\\b]"
+				},
+				{
+					"isActive": true,
+					"key": "Audio",
+					"regex": "([\\w]+\\.(?:mp3|wav|aac|flac))[\\b]"
+				},
+				{
+					"isActive": false,
+					"key": "Harmless Files",
+					"regex": "([\\w]+\\.(?:txt|asc|csv|log|md))[\\b]"
+				},
+				{
+					"isActive": false,
+					"key": "Base64 Strings",
+					"regex": "([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?"
+				},
+				{
+					"isActive": false,
+					"key": "Script Language File",
+					"regex": "([\\w]+\\.(?:py|js|java|cs|cpp|rb|go|php))[\\b]"
+				},
+				{
+					"isActive": false,
+					"key": "Chord Progressions",
+					"regex": "\\b((?:C|Dm|Em|F|G|Am|Bdim)(?:\\s->\\s(?:C|Dm|Em|F|G|Am|Bdim))*)\\b"
+				},
+				{
+					"isActive": false,
+					"key": "Hex Colors",
+					"regex": "#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})"
+				},
+				{
+					"isActive": false,
+					"key": "Chemical Elements",
+					"regex": "\\b(?:H|He|Li|Be|B|C|N|O|F|Ne|Na|Mg|Al|Si|P|S|Cl|Ar|K|Ca)\\b"
+				},
+				{
+					"isActive": false,
+					"key": "Social Media Hashtags",
+					"regex": "#[A-Za-z0-9_]+"
+				},
+				{
+					"isActive": false,
+					"key": "Academic Citations",
+					"regex": "\\b\\([A-Za-z]+,\\s[0-9]{4}\\)\\b"
+				},
+				{
+					"isActive": false,
+					"key": "Temperature Readings",
+					"regex": "\\b-?[0-9]+\\s?(°C|°F|K)\\b"
+				}
+			],
 		}
 	],
 	ignoreLinks: true,
@@ -238,25 +249,35 @@ class RelaxSettingTab extends PluginSettingTab {
 		this.makeDraggable = this.makeDraggable.bind(this);
 
 		this.updateRegexOrderFromDOM = () => {
-			const regexPairs = [];
-			this.keyValueContainer.querySelectorAll("div").forEach(row => {
-				const activeCheckboxInput = row.querySelector("input[type='checkbox']");
-				const keyInput = row.querySelector("input[placeholder='Description-Key']");
-				const valueInput = row.querySelector("input[placeholder='Regexp']");
-				if (keyInput && valueInput && activeCheckboxInput) {
-					const key = keyInput.value;
-					const value = valueInput.value;
-					const isActive = activeCheckboxInput.checked;
-					regexPairs.push({isActive, key, regex: value});
-				}
+			const regexGroups = [];
+			this.keyValueContainer.querySelectorAll(".regex-group-container").forEach(groupContainer => {
+				const groupNameElement = groupContainer.querySelector(".regex-group-name");
+				const activeCheckboxInput = groupContainer.querySelector("input[type='checkbox']");
+				const groupName = groupNameElement ? groupNameElement.textContent : "";
+				const isActive = activeCheckboxInput ? activeCheckboxInput.checked : false;
+
+				const regexes = Array.from(groupContainer.querySelectorAll(".regex-group-content .flex-row")).map(row => {
+					const keyInput = row.querySelector("input[placeholder='Description-Key']");
+					const valueInput = row.querySelector("input[placeholder='Regexp']");
+					const regexActiveCheckbox = row.querySelector("input[type='checkbox']");
+					return {
+						isActive: regexActiveCheckbox ? regexActiveCheckbox.checked : false,
+						key: keyInput ? keyInput.value : "",
+						regex: valueInput ? valueInput.value : ""
+					};
+				});
+
+				regexGroups.push({ isActive, groupName, regexes });
 			});
+
 			if (this.plugin && this.plugin.settings) {
-				this.plugin.settings.regexPairs = regexPairs;
+				this.plugin.settings.regexGroups = regexGroups;
 				this.plugin.saveSettings();
 			} else {
 				console.error("Plugin or settings not available");
 			}
 		};
+
 
 		this.saveChanges = () => {
 			this.updateRegexOrderFromDOM();
@@ -301,37 +322,50 @@ class RelaxSettingTab extends PluginSettingTab {
 
 			this.newIndex = null;
 			let closestDistance = Infinity;
-			[...this.dragElement.parentElement.children].forEach((child, idx) => {
-				if (child !== this.dragElement) {
-					const rect = child.getBoundingClientRect();
-					const distance = Math.abs(rect.top + rect.height / 2 - e.clientY);
-					if (distance < closestDistance) {
-						closestDistance = distance;
-						this.newIndex = idx;
+
+			// Ensure that the parent of the dragElement is not null
+			const parent = this.dragElement.parentElement;
+			if (parent) {
+				[...parent.children].forEach((child, idx) => {
+					if (child !== this.dragElement) {
+						const rect = child.getBoundingClientRect();
+						const distance = Math.abs(rect.top + rect.height / 2 - e.clientY);
+						if (distance < closestDistance) {
+							closestDistance = distance;
+							this.newIndex = idx;
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 	}
 
-	onDragEnd() {
+	onDragEnd(e) {
 		if (this.dragElement) {
 			this.dragElement.classList.remove("dragging");
 
-			if (this.newIndex !== null && this.currentIndex !== null && this.newIndex !== this.currentIndex) {
-				const parent = this.dragElement.parentElement;
-				if (this.newIndex >= parent.children.length) {
-					parent.appendChild(this.dragElement);
-				} else {
-					parent.insertBefore(this.dragElement, parent.children[this.newIndex + (this.newIndex > this.currentIndex ? 1 : 0)]);
+			const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
+			const groupContainer = dropTarget ? dropTarget.closest('.regex-group-container') : null;
+			const groupContent = groupContainer ? groupContainer.querySelector('.regex-group-content') : null;
+
+			if (groupContainer && groupContent) {
+				groupContent.appendChild(this.dragElement);
+			} else {
+				if (this.newIndex !== null && this.currentIndex !== null && this.newIndex !== this.currentIndex) {
+					const parent = this.dragElement.parentElement;
+					if (this.newIndex >= parent.children.length) {
+						parent.appendChild(this.dragElement);
+					} else {
+						parent.insertBefore(this.dragElement, parent.children[this.newIndex + (this.newIndex > this.currentIndex ? 1 : 0)]);
+					}
 				}
 			}
 
+			this.dragElement.style.top = '0px';
 			this.dragElement = null;
 			this.updateRegexOrderFromDOM();
 			document.removeEventListener("mousemove", this.onDragMove);
 			document.removeEventListener("mouseup", this.onDragEnd);
-			this.reorderElements();
 			this.currentIndex = null;
 			this.newIndex = null;
 		}
@@ -355,7 +389,7 @@ class RelaxSettingTab extends PluginSettingTab {
 		}
 	}
 	display() {
-		const {containerEl} = this;
+		const { containerEl } = this;
 		containerEl.empty();
 		this.keyValueContainer = containerEl.createEl("div");
 		this.keyValueContainer.classList.add("flex-column");
@@ -415,6 +449,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				input.parentNode.insertBefore(span, input.nextSibling);
 			}
 		};
+
 		const addKeyValue = (key?: string, value?: string, isActive = false) => {
 			const row = this.keyValueContainer.createEl("div");
 			row.classList.add("flex-row");
@@ -440,14 +475,68 @@ class RelaxSettingTab extends PluginSettingTab {
 			if (dragHandle) this.makeDraggable(row, dragHandle);
 			valueInput.addEventListener("input", () => validateRegexInput(valueInput));
 		};
+		const addGroupUI = (group: RegexGroup) => {
+			const groupContainer = this.keyValueContainer.createEl("div", { cls: 'regex-group-container group-container' });
+			groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
+			groupContainer.style.padding = "10px";
+			groupContainer.style.marginBottom = "10px";
+
+			const groupHeader = groupContainer.createEl("div", { cls: 'regex-group-header' });
+			const dragHandle = groupHeader.createEl("span", { className: "drag-handle", text: "☰" });
+			const collapseIcon = groupHeader.createEl("span", { cls: 'collapse-icon', text: group.isActive ? '▼' : '►' });
+			const groupActiveCheckbox = groupHeader.createEl("input", { type: 'checkbox' });
+			groupActiveCheckbox.checked = group.isActive;
+
+			const groupNameEl = groupHeader.createEl("span", { cls: 'regex-group-name', text: group.groupName });
+			groupNameEl.addEventListener("click", () => {
+				const newGroupName = prompt("Edit Group Name", groupNameEl.textContent);
+				if (newGroupName) groupNameEl.textContent = newGroupName;
+				group.groupName = newGroupName;
+				this.setHighlighted(true);
+			});
+
+			const groupContent = groupContainer.createEl("div", { cls: 'regex-group-content' });
+			groupContent.style.display = group.isActive ? "block" : "none";
+
+			groupHeader.addEventListener("click", () => {
+				if (group.isActive) {
+					groupContainer.classList.add("active");
+				} else {
+					groupContainer.classList.remove("active");
+				}
+				group.isActive = !group.isActive;
+				groupActiveCheckbox.checked = group.isActive;
+				groupContent.style.display = group.isActive ? "block" : "none";
+				collapseIcon.textContent = group.isActive ? '▼' : '►';
+				groupContainer.style.border = group.isActive ? "1px solid accent-color" : "1px solid #ccc";
+				this.setHighlighted(true);
+			});
+
+			if (dragHandle) this.makeDraggable(groupContainer, dragHandle);
+
+			group.regexes.forEach(regex => {
+				addKeyValue(groupContent, regex.key, regex.regex, regex.isActive);
+			});
+		};
+
+		const addGroupButton = containerEl.createEl("button", { text: "Add Group" });
+		addGroupButton.addEventListener("click", () => {
+			this.plugin.settings.regexGroups.push({
+				isActive: true,
+				groupName: "New Group",
+				regexes: []
+			});
+			this.display();
+		});
+
+
+		this.plugin.settings.regexGroups.forEach(group => addGroupUI(group));
 
 		containerEl.createEl("button", {text: "Add Regexp"}).addEventListener("click", () => addKeyValue());
 
 		for (const {isActive, key, regex} of this.plugin.settings.regexPairs) {
 			addKeyValue(key, regex, isActive);
 		}
-
-
 
 		new Setting(containerEl)
 			.setName("Ignore links")
@@ -701,54 +790,54 @@ export default class RelaxPlugin extends Plugin {
 				return;
 			}
 
-			for (const {isActive, key, regex} of settings.regexPairs) {
-				if (!isActive) {
-					continue;
-				}
+			let modifiedLine = line;
 
-				const compiledRegex = new RegExp(regex, "g");
-				line = line.replace(compiledRegex, (match, ...args) => {
-					const groups = args.slice(0, -2).filter(g => g !== undefined);
-					const capturedValue = groups[0];
+			settings.regexGroups.forEach(group => {
+				if (!group.isActive) return;
 
-					if (!capturedValue) return match;
+				group.regexes.forEach(({isActive, regex}) => {
+					if (!isActive) return;
 
-					if (settings.ignoreLinks && containsValidLink(line, capturedValue)) {
-						return match;
-					}
+					const compiledRegex = new RegExp(regex, "g");
+					modifiedLine = modifiedLine.replace(compiledRegex, (match, ...args) => {
+						const groups = args.slice(0, -2).filter(g => g !== undefined);
+						const capturedValue = groups[0];
 
-					if (settings.ignoreURLs) {
-						const urls = Array.from(line.matchAll(urlRegex), m => m[0]);
-						let ignoreCurrentMatch = false;
+						if (!capturedValue) return match;
 
-						for (const url of urls) {
-							if (!excludedExtensions.test(url) && url.includes(capturedValue)) {
-								ignoreCurrentMatch = true;
-								break;
+						if (settings.ignoreLinks && containsValidLink(line, capturedValue)) {
+							return match;
+						}
+
+						if (settings.ignoreURLs) {
+							const urls = Array.from(line.matchAll(urlRegex), m => m[0]);
+							let ignoreCurrentMatch = false;
+
+							for (const url of urls) {
+								if (!excludedExtensions.test(url) && url.includes(capturedValue)) {
+									ignoreCurrentMatch = true;
+									break;
+								}
+							}
+
+							if (ignoreCurrentMatch) {
+								return match;
 							}
 						}
 
-						if (ignoreCurrentMatch) {
-							return match;
-						}
-					}
+						const offset = args[args.length - 2];
+						const precedingChar = offset > 0 ? line[offset - 1] : null;
+						const spaceIfBackslash = precedingChar === '\\' ? ' ' : '';
 
-					const offset = args[args.length - 2];
-					const precedingChar = offset > 0 ? line[offset - 1] : null;
-					const spaceIfBackslash = precedingChar === '\\' ? ' ' : '';
-
-					return `${spaceIfBackslash}[[${match}]]`;
-
+						return `${spaceIfBackslash}[[${match}]]`;
+					});
 				});
-			}
-			updatedText += line;
+			});
 
-			if (index !== lines.length - 1) {
-				updatedText += "\n";
-			}
+			updatedText += modifiedLine + "\n";
 		});
 
-		return updatedText;
+		return updatedText.trim();
 	}
 
 	async processMarkdownContent(action: "removeBrackets" | "addBrackets") {
