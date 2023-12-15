@@ -4,7 +4,9 @@ interface RegexGroup {
 	isActive: boolean;
 	groupName: string;
 	regexes: Array<{ isActive: boolean, key: string, regex: string }>;
+	isCollapsed?: boolean;
 }
+
 
 interface RelaxPluginSettings {
 	regexGroups: Array<RegexGroup>;
@@ -242,6 +244,8 @@ class RelaxSettingTab extends PluginSettingTab {
 	startY = 0;
 	startTop = 0;
 	initialOffsetY = 0;
+	private settingsInitialized = false;
+
 
 	constructor(app: App, plugin: RelaxPlugin) {
 		super(app, plugin);
@@ -405,6 +409,8 @@ class RelaxSettingTab extends PluginSettingTab {
 		this.keyValueContainer = containerEl.createEl("div");
 		this.keyValueContainer.classList.add("flex-column");
 
+		this.createSettingsUI(containerEl);
+
 		const validateContent = (content) => {
 			const regex = /\[\[(.+?)\]\]/g;
 			return !regex.test(content);
@@ -503,7 +509,7 @@ class RelaxSettingTab extends PluginSettingTab {
 
 			const groupHeader = groupContainer.createEl("div", {cls: 'regex-group-header'});
 			const dragHandle = groupHeader.createEl("span", {className: "drag-handle", text: "☰"});
-			const collapseIcon = groupHeader.createEl("span", {cls: 'collapse-icon', text: group.isActive ? '▼' : '►'});
+			const collapseIcon = groupHeader.createEl("span", {cls: 'collapse-icon'});
 			const groupActiveCheckbox = groupHeader.createEl("input", {type: 'checkbox'});
 			groupActiveCheckbox.checked = group.isActive;
 			groupContainer.insertBefore(groupHeader, groupContainer.firstChild);
@@ -514,9 +520,14 @@ class RelaxSettingTab extends PluginSettingTab {
 				this.setHighlighted(true);
 			});
 
+			const groupContent = groupContainer.createEl("div", {cls: 'regex-group-content'});
+			groupContent.style.display = group.isCollapsed ? "none" : "block";
+			collapseIcon.textContent = group.isCollapsed ? '►' : '▼';
+
 			collapseIcon.addEventListener("click", () => {
-				groupContent.style.display = groupContent.style.display === "none" ? "block" : "none";
-				collapseIcon.textContent = groupContent.style.display === "block" ? '▼' : '►';
+				group.isCollapsed = !group.isCollapsed;
+				groupContent.style.display = group.isCollapsed ? "none" : "block";
+				collapseIcon.textContent = group.isCollapsed ? '►' : '▼';
 				this.setHighlighted(true);
 			});
 
@@ -533,15 +544,17 @@ class RelaxSettingTab extends PluginSettingTab {
 				}
 			});
 
-			const groupContent = groupContainer.createEl("div", {cls: 'regex-group-content'});
-			groupContent.style.display = group.isActive ? "block" : "none";
-
 			if (dragHandle) this.makeDraggable(groupContainer, dragHandle);
 			group.regexes.forEach(regex => addRegexToGroup(groupContent, regex));
 		};
 
 
-		const addGroupButton = containerEl.createEl("button", {text: "Add Group"});
+		const buttonsContainer = containerEl.createDiv();
+		buttonsContainer.style.display = "flex";
+		buttonsContainer.style.justifyContent = "space-between";
+		buttonsContainer.style.marginBottom = "10px";
+
+		const addGroupButton = buttonsContainer.createEl("button", { text: "Add Group" });
 		addGroupButton.addEventListener("click", () => {
 			this.plugin.settings.regexGroups.push({
 				isActive: true,
@@ -551,109 +564,92 @@ class RelaxSettingTab extends PluginSettingTab {
 			this.display();
 		});
 
-		const addKeyValue = (key, value, isActive) => {
-			const row = this.keyValueContainer.createEl("div", { cls: 'flex-row' });
-			row.classList.add("flex-row");
-
-			const dragHandle = row.createEl("span", { className: "drag-handle", text: "☰" });
-			const activeCheckbox = row.createEl("input", { className: "active-checkbox" });
-			activeCheckbox.type = "checkbox";
-			activeCheckbox.checked = isActive;
-			row.appendChild(activeCheckbox);
-
-			new Setting(containerEl)
-				.setName("Ignore links")
-				.addToggle(toggle => {
-					toggle
-						.setValue(this.plugin.settings.ignoreLinks ?? true)
-						.onChange(async value => {
-							this.plugin.settings.ignoreLinks = value;
-							await this.plugin.saveSettings();
-						})
-						.setTooltip("Do not modify Links, preventing to handle the same data over and over again.")
-					;
-				});
-			new Setting(containerEl)
-				.setName("Ignore URLs")
-				.addToggle(toggle => {
-					toggle
-						.setValue(this.plugin.settings.ignoreURLs ?? true)
-						.onChange(async value => {
-							this.plugin.settings.ignoreURLs = value;
-							await this.plugin.saveSettings();
-						})
-						.setTooltip("Do not modify URLs, so they do keep working.")
-					;
-				});
-			new Setting(containerEl)
-				.setName("Defang URLs")
-				.addToggle(toggle => {
-					toggle
-						.setValue(this.plugin.settings.defangURLs ?? true)
-						.onChange(async value => {
-							this.plugin.settings.defangURLs = value;
-							await this.plugin.saveSettings();
-						})
-						.setTooltip("https[:]// -> https://")
-					;
-				});
-			new Setting(containerEl)
-				.setName("Ignore code blocks")
-				.addToggle(toggle => {
-					toggle
-						.setValue(this.plugin.settings.ignoreCodeBlocks ?? false)
-						.onChange(async value => {
-							this.plugin.settings.ignoreCodeBlocks = value;
-							await this.plugin.saveSettings();
-						})
-						.setTooltip("Ignore content within code blocks when linking regexes.");
-				});
-
-			new Setting(containerEl)
-				.setName("Save")
-				.addButton(button => {
-					button.setButtonText("Save")
-						.onClick(() => {
-							this.saveChanges();
-						});
-					this.saveButton = button.buttonEl;
-				});
-
-			const updateHighlightedState = () => this.setHighlighted(true);
-			this.keyValueContainer.addEventListener("input", updateHighlightedState);
-			this.keyValueContainer.addEventListener("change", updateHighlightedState);
-
-			new Setting(containerEl)
-				.setName("Reset defaults")
-				.addButton(button => {
-					button.setButtonText("Reset")
-						.onClick(() => {
-							const resetConfirm = confirm("Are you sure you want to reset to default settings?");
-							if (resetConfirm) {
-								this.resetToDefaults();
-
-								if (this.plugin._settingTabReference) {
-									this.plugin._settingTabReference.display();
-								}
-							}
-						});
-				});
-			const updateHighlitedState = () => this.setHighlighted(true);
-			this.keyValueContainer.addEventListener("input", updateHighlitedState);
-			this.keyValueContainer.addEventListener("change", updateHighlitedState);
-		}
+		const addRegexPairButton = buttonsContainer.createEl("button", { text: "Add Regexp" });
+		addRegexPairButton.addEventListener("click", () => this.addStandaloneRegexUI({ isActive: false, key: '', regex: '' }));
 
 		this.plugin.settings.regexGroups.forEach(group => addGroupUI(group));
 
 		if (this.plugin.settings.regexPairs && Array.isArray(this.plugin.settings.regexPairs)) {
-			this.plugin.settings.regexPairs.forEach(pair => {
-				addKeyValue(pair.key, pair.regex, pair.isActive);
-			});
+			this.plugin.settings.regexPairs.forEach(pair => this.addStandaloneRegexUI(pair));
 		}
-
-		containerEl.createEl("button", { text: "Add Regexp" }).addEventListener("click", () => addKeyValue());
-
 	}
+
+	createSettingsUI(containerEl) {
+		// Ignore Links Toggle
+		new Setting(containerEl)
+			.setName("Ignore links")
+			.addToggle(toggle => {
+				toggle
+					.setValue(this.plugin.settings.ignoreLinks ?? true)
+					.onChange(async value => {
+						this.plugin.settings.ignoreLinks = value;
+						await this.plugin.saveSettings();
+					})
+					.setTooltip("Do not modify Links, preventing to handle the same data over and over again.");
+			});
+
+		new Setting(containerEl)
+			.setName("Ignore URLs")
+			.addToggle(toggle => {
+				toggle
+					.setValue(this.plugin.settings.ignoreURLs ?? true)
+					.onChange(async value => {
+						this.plugin.settings.ignoreURLs = value;
+						await this.plugin.saveSettings();
+					})
+					.setTooltip("Do not modify URLs, so they do keep working.");
+			});
+
+		new Setting(containerEl)
+			.setName("Defang URLs")
+			.addToggle(toggle => {
+				toggle
+					.setValue(this.plugin.settings.defangURLs ?? true)
+					.onChange(async value => {
+						this.plugin.settings.defangURLs = value;
+						await this.plugin.saveSettings();
+					})
+					.setTooltip("Convert https[:]// -> https://");
+			});
+
+		new Setting(containerEl)
+			.setName("Ignore code blocks")
+			.addToggle(toggle => {
+				toggle
+					.setValue(this.plugin.settings.ignoreCodeBlocks ?? false)
+					.onChange(async value => {
+						this.plugin.settings.ignoreCodeBlocks = value;
+						await this.plugin.saveSettings();
+					})
+					.setTooltip("Ignore content within code blocks when linking regexes.");
+			});
+
+		new Setting(containerEl)
+			.setName("Save")
+			.addButton(button => {
+				button.setButtonText("Save")
+					.onClick(() => {
+						this.saveChanges();
+					});
+				this.saveButton = button.buttonEl;
+			});
+
+		new Setting(containerEl)
+			.setName("Reset defaults")
+			.addButton(button => {
+				button.setButtonText("Reset")
+					.onClick(() => {
+						const resetConfirm = confirm("Are you sure you want to reset to default settings?");
+						if (resetConfirm) {
+							this.resetToDefaults();
+							if (this.plugin._settingTabReference) {
+								this.plugin._settingTabReference.display();
+							}
+						}
+					});
+			});
+	}
+
 
 	resetToDefaults() {
 		this.plugin.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
@@ -692,9 +688,14 @@ class RelaxSettingTab extends PluginSettingTab {
 			this.updateRegexOrderFromDOM();
 		});
 
-		// Make the row draggable
-		if (dragHandle) this.makeDraggable(row, dragHandle);
+		const inputsContainer = row.createDiv({ cls: 'inputs-container' });
+		inputsContainer.append(keyInput, valueInput, deleteButton);
+		inputsContainer.style.flexGrow = "1";
+		inputsContainer.style.display = "flex";
+		inputsContainer.style.justifyContent = "space-between";
+		inputsContainer.style.alignItems = "center";
 
+		if (dragHandle) this.makeDraggable(row, dragHandle);
 	}
 }
 
