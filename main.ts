@@ -273,7 +273,8 @@ class RelaxSettingTab extends PluginSettingTab {
 					};
 				});
 
-				regexGroups.push({isActive, groupName, regexes});
+				const isCollapsed = groupContainer.querySelector('.regex-group-content').style.display === "none";
+				regexGroups.push({isActive, groupName, regexes, isCollapsed});
 			});
 
 			if (this.plugin && this.plugin.settings) {
@@ -282,7 +283,6 @@ class RelaxSettingTab extends PluginSettingTab {
 			} else {
 				console.error("Plugin or settings not available");
 			}
-
 			const regexPairs = Array.from(this.keyValueContainer.querySelectorAll(".standalone-regex-row")).map(row => {
 				const keyInput = row.querySelector("input[placeholder='Description-Key']");
 				const valueInput = row.querySelector("input[placeholder='Regexp']");
@@ -294,6 +294,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				};
 			});
 
+			// Update the settings with the new regex pairs
 			this.plugin.settings.regexPairs = regexPairs;
 			this.plugin.saveSettings();
 		};
@@ -497,10 +498,11 @@ class RelaxSettingTab extends PluginSettingTab {
 				});
 
 			if (dragHandle) this.makeDraggable(row, dragHandle);
-			valueInput.addEventListener("input", () => validateRegexInput(valueInput));
-		};
-
-
+			valueInput.addEventListener("input", () => {
+				validateRegexInput(valueInput);
+				this.setHighlighted(true);
+			});
+		}
 		const addGroupUI = (group) => {
 			const groupContainer = this.keyValueContainer.createEl("div", {cls: 'regex-group-container group-container'});
 			groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
@@ -661,7 +663,7 @@ class RelaxSettingTab extends PluginSettingTab {
 	}
 
 	private addStandaloneRegexUI(pair) {
-		const row = this.keyValueContainer.createEl("div", { cls: 'flex-row' });
+		const row = this.keyValueContainer.createEl("div", { cls: 'flex-row standalone-regex-row' });
 
 		const dragHandle = row.createEl("span", { className: "drag-handle", text: "☰" });
 
