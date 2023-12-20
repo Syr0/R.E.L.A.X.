@@ -360,9 +360,6 @@ class RelaxSettingTab extends PluginSettingTab {
 			document.addEventListener("mouseup", this.onDragEnd);
 		});
 	}
-
-
-
 	onDragMove(e) {
 		if (!this.dragElement) return;
 
@@ -376,8 +373,8 @@ class RelaxSettingTab extends PluginSettingTab {
 		[...parent.children].forEach((child) => {
 			if (child !== this.dragElement && child !== this.placeholder) {
 				const rect = child.getBoundingClientRect();
-				const childTop = rect.top + scrollTop;
-				const distance = Math.abs(mouseY - (childTop + rect.height / 2));
+				const childMidpoint = rect.top + scrollTop + rect.height / 2;
+				const distance = Math.abs(mouseY - childMidpoint);
 
 				if (distance < closestDistance) {
 					closest = child;
@@ -387,13 +384,16 @@ class RelaxSettingTab extends PluginSettingTab {
 		});
 
 		if (closest) {
-			if (mouseY < closest.getBoundingClientRect().top + scrollTop) {
+			const rect = closest.getBoundingClientRect();
+			const childMidpoint = rect.top + scrollTop + rect.height / 2;
+			if (mouseY < childMidpoint) {
 				parent.insertBefore(this.placeholder, closest);
 			} else {
 				parent.insertBefore(this.placeholder, closest.nextSibling);
 			}
 		}
 	}
+
 
 	calculateNewIndex(mouseY) {
 		let newIndex = null;
