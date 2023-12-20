@@ -330,6 +330,10 @@ class RelaxSettingTab extends PluginSettingTab {
 
 			document.addEventListener("mousemove", this.onDragMove);
 			document.addEventListener("mouseup", this.onDragEnd);
+
+			this.dragElement.style.visibility = 'hidden';
+			const clone = this.dragElement.cloneNode(true);
+			this.placeholder.appendChild(clone);
 		});
 	}
 
@@ -343,7 +347,7 @@ class RelaxSettingTab extends PluginSettingTab {
 		let closest = null;
 		let closestDistance = Infinity;
 
-		[...parent.children].forEach((child, idx) => {
+		[...parent.children].forEach((child) => {
 			if (child !== this.dragElement && child !== this.placeholder) {
 				const rect = child.getBoundingClientRect();
 				const childTop = rect.top + scrollTop;
@@ -363,6 +367,9 @@ class RelaxSettingTab extends PluginSettingTab {
 				parent.insertBefore(this.placeholder, closest.nextSibling);
 			}
 		}
+
+		// Visually update the placeholder to look like the dragged element
+		this.placeholder.innerHTML = this.dragElement.outerHTML;
 	}
 
 	calculateNewIndex(mouseY) {
@@ -387,23 +394,23 @@ class RelaxSettingTab extends PluginSettingTab {
 	onDragEnd() {
 		if (this.dragElement) {
 			if (this.placeholder && this.placeholder.parentNode) {
-				this.placeholder.parentNode.replaceChild(this.dragElement, this.placeholder);
+				this.placeholder.parentNode.insertBefore(this.dragElement, this.placeholder);
+				this.dragElement.style.visibility = 'visible';
+
+				this.placeholder.remove();
 			}
 			this.dragElement.classList.remove("dragging");
 			this.dragElement = null;
 		}
 
 		if (this.placeholder) {
-			if (this.placeholder.parentNode) {
-				this.placeholder.parentNode.removeChild(this.placeholder);
-			}
+			this.placeholder.remove();
 			this.placeholder = null;
 		}
 
 		document.removeEventListener("mousemove", this.onDragMove);
 		document.removeEventListener("mouseup", this.onDragEnd);
 	}
-
 
 	setHighlighted(highlight: boolean) {
 		this.isHighlited = highlight;
