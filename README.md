@@ -8,7 +8,7 @@
   <a href="#"><img src="https://img.shields.io/badge/KnownBugs-0-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/Status-Stable-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-3-pink"></a>
-  <a href="#"><img src="https://img.shields.io/badge/ObsidianCommunityPlugin-Checking...-red"></a></h1>
+  <a href="#"><img src="https://img.shields.io/badge/ObsidianCommunityPlugin-Approved-red"></a></h1>
 </p>
 
 
