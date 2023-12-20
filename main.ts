@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 	regexGroups: [
 		{
 			isActive: true,
-			groupName: "Email and Domains",
+			groupName: "Default RegEx",
 			regexes: [
 				{
 					"isActive": true,
