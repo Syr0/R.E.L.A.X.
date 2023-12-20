@@ -652,16 +652,23 @@ class RelaxSettingTab extends PluginSettingTab {
 
 		const addGroupButton = buttonsContainer.createEl("button", { text: "Add Group" });
 		addGroupButton.addEventListener("click", () => {
-			this.plugin.settings.regexGroups.push({
+			const newGroup = {
 				isActive: true,
 				groupName: "New Group",
 				regexes: []
-			});
+			};
+			this.plugin.settings.regexGroups.push(newGroup);
 			this.display();
+			this.plugin.saveSettings();
 		});
 
 		const addRegexPairButton = buttonsContainer.createEl("button", { text: "Add Regexp" });
-		addRegexPairButton.addEventListener("click", () => this.addStandaloneRegexUI({ isActive: false, key: '', regex: '' }));
+		addRegexPairButton.addEventListener("click", () => {
+			const newPair = { isActive: false, key: '', regex: '' };
+			this.addStandaloneRegexUI(newPair);
+			this.plugin.settings.regexPairs.push(newPair);
+			this.plugin.saveSettings();
+		});
 
 		this.plugin.settings.regexGroups.forEach((group, index) => addGroupUI(group, index));
 
