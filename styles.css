@@ -54,7 +54,20 @@
 	flex: 1;
 	margin-right: 10px;
 }
-
+.draggable {
+	cursor: move;
+}
+.draggable.hide {
+	display: none;
+}
+.placeholder {
+	border: 2px dashed #ccc;
+	margin: 4px 0;
+	background-color: #f0f0f0;
+}
+.draggable:active {
+	opacity: 0.5;
+}
 .value-input-flex {
 	flex: 2;
 	margin-right: 10px;
@@ -78,4 +91,17 @@
 }
 .regex-group-container.active {
 	border: 1px solid var(--interactive-accent);
+}
+.draggable {
+	cursor: pointer; 
+}
+
+.draggable.hide {
+	opacity: 0.4; 
+}
+.placeholder {
+	border: 2px dashed var(--interactive-accent);
+	margin: 4px 0;
+	background-color: var(--background-primary);
+	border-radius: 4px;
 }

@@ -320,16 +320,13 @@ class RelaxSettingTab extends PluginSettingTab {
 			e.preventDefault();
 			e.stopPropagation();
 
-			const settingsContainerTop = document.querySelector(".vertical-tab-content-container").getBoundingClientRect().top;
-			const elementRect = element.getBoundingClientRect();
-			this.initialOffsetY = e.clientY - elementRect.top + settingsContainerTop;
-			this.currentIndex = [...element.parentElement.children].indexOf(element);
-
 			this.dragElement = element;
 			this.dragElement.classList.add("dragging");
 
-			const newTop = e.clientY - this.initialOffsetY;
-			this.dragElement.style.top = `${newTop}px`;
+			this.placeholder = document.createElement('div');
+			this.placeholder.className = 'placeholder';
+			this.placeholder.style.height = `${element.offsetHeight}px`;
+			element.parentNode.insertBefore(this.placeholder, element);
 
 			document.addEventListener("mousemove", this.onDragMove);
 			document.addEventListener("mouseup", this.onDragEnd);
@@ -337,60 +334,76 @@ class RelaxSettingTab extends PluginSettingTab {
 	}
 
 	onDragMove(e) {
-		if (this.dragElement) {
-			const newTop = e.clientY - this.initialOffsetY;
-			this.dragElement.style.top = `${newTop}px`;
+		if (!this.dragElement) return;
 
-			this.newIndex = null;
-			let closestDistance = Infinity;
+		const parent = this.dragElement.parentElement;
+		const scrollTop = parent.scrollTop;
+		const mouseY = e.clientY + scrollTop;
 
-			// Ensure that the parent of the dragElement is not null
-			const parent = this.dragElement.parentElement;
-			if (parent) {
-				[...parent.children].forEach((child, idx) => {
-					if (child !== this.dragElement) {
-						const rect = child.getBoundingClientRect();
-						const distance = Math.abs(rect.top + rect.height / 2 - e.clientY);
-						if (distance < closestDistance) {
-							closestDistance = distance;
-							this.newIndex = idx;
-						}
-					}
-				});
-			}
-		}
-	}
+		let closest = null;
+		let closestDistance = Infinity;
 
-	onDragEnd(e) {
-		if (this.dragElement) {
-			this.dragElement.classList.remove("dragging");
+		[...parent.children].forEach((child, idx) => {
+			if (child !== this.dragElement && child !== this.placeholder) {
+				const rect = child.getBoundingClientRect();
+				const childTop = rect.top + scrollTop;
+				const distance = Math.abs(mouseY - (childTop + rect.height / 2));
 
-			const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
-			const groupContainer = dropTarget ? dropTarget.closest('.regex-group-container') : null;
-			const groupContent = groupContainer ? groupContainer.querySelector('.regex-group-content') : null;
-
-			if (groupContainer && groupContent) {
-				groupContent.appendChild(this.dragElement);
-			} else {
-				if (this.newIndex !== null && this.currentIndex !== null && this.newIndex !== this.currentIndex) {
-					const parent = this.dragElement.parentElement;
-					if (this.newIndex >= parent.children.length) {
-						parent.appendChild(this.dragElement);
-					} else {
-						parent.insertBefore(this.dragElement, parent.children[this.newIndex + (this.newIndex > this.currentIndex ? 1 : 0)]);
-					}
+				if (distance < closestDistance) {
+					closest = child;
+					closestDistance = distance;
 				}
 			}
+		});
 
-			this.dragElement.style.top = '0px';
-			this.dragElement = null;
-			this.updateRegexOrderFromDOM();
-			document.removeEventListener("mousemove", this.onDragMove);
-			document.removeEventListener("mouseup", this.onDragEnd);
-			this.currentIndex = null;
-			this.newIndex = null;
+		if (closest) {
+			if (mouseY < closest.getBoundingClientRect().top + scrollTop) {
+				parent.insertBefore(this.placeholder, closest);
+			} else {
+				parent.insertBefore(this.placeholder, closest.nextSibling);
+			}
 		}
 	}
+
+	calculateNewIndex(mouseY) {
+		let newIndex = null;
+		let closestDistance = Infinity;
+
+		const parent = this.dragElement.parentElement;
+		if (parent) {
+			[...parent.children].forEach((child, idx) => {
+				if (child !== this.dragElement) {
+					const rect = child.getBoundingClientRect();
+					const distance = Math.abs(rect.top + rect.height / 2 - mouseY);
+					if (distance < closestDistance) {
+						closestDistance = distance;
+						newIndex = idx;
+					}
+				}
+			});
+		}
+		return newIndex;
+	}
+	onDragEnd() {
+		if (this.dragElement) {
+			if (this.placeholder && this.placeholder.parentNode) {
+				this.placeholder.parentNode.replaceChild(this.dragElement, this.placeholder);
+			}
+			this.dragElement.classList.remove("dragging");
+			this.dragElement = null;
+		}
+
+		if (this.placeholder) {
+			if (this.placeholder.parentNode) {
+				this.placeholder.parentNode.removeChild(this.placeholder);
+			}
+			this.placeholder = null;
+		}
+
+		document.removeEventListener("mousemove", this.onDragMove);
+		document.removeEventListener("mouseup", this.onDragEnd);
+	}
+
 
 	setHighlighted(highlight: boolean) {
 		this.isHighlited = highlight;
@@ -441,6 +454,58 @@ class RelaxSettingTab extends PluginSettingTab {
 
 				textarea.addEventListener("input", function () {
 					applyValidationStyle(textarea);
+				});
+			});
+		});
+
+		document.addEventListener('DOMContentLoaded', () => {
+			let draggedElement = null;
+			let placeholder = null;
+
+			const createPlaceholder = () => {
+				const div = document.createElement('div');
+				div.style.height = '2px';
+				div.style.background = 'blue';
+				div.style.margin = '5px 0';
+				return div;
+			};
+
+			document.querySelectorAll('.draggable').forEach(elem => {
+				elem.addEventListener('mousedown', function(e) {
+					draggedElement = this;
+					placeholder = createPlaceholder();
+					draggedElement.parentNode.insertBefore(placeholder, draggedElement.nextSibling);
+					draggedElement.style.opacity = '0.5';
+					e.preventDefault();
+				});
+
+				document.addEventListener('mousemove', (e) => {
+					if (!draggedElement) return;
+
+					const rect = placeholder.getBoundingClientRect();
+					const parent = placeholder.parentNode;
+					parent.childNodes.forEach((child) => {
+						if (child !== draggedElement && child !== placeholder) {
+							const childRect = child.getBoundingClientRect();
+							if (e.clientY > childRect.top && e.clientY < childRect.bottom) {
+								if (e.clientY < (childRect.top + childRect.bottom) / 2) {
+									parent.insertBefore(placeholder, child);
+								} else {
+									parent.insertBefore(placeholder, child.nextSibling);
+								}
+							}
+						}
+					});
+				});
+
+				document.addEventListener('mouseup', () => {
+					if (draggedElement) {
+						draggedElement.style.opacity = '1';
+						placeholder.parentNode.insertBefore(draggedElement, placeholder);
+						placeholder.parentNode.removeChild(placeholder);
+						draggedElement = null;
+						placeholder = null;
+					}
 				});
 			});
 		});
