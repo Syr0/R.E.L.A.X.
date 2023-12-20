@@ -327,26 +327,40 @@ class RelaxSettingTab extends PluginSettingTab {
 			this.placeholder.style.position = 'relative';
 			this.placeholder.style.height = `${element.offsetHeight}px`;
 			this.placeholder.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
-			this.placeholder.style.border = '2px dashed var(--interactive-accent)';
 			element.parentNode.insertBefore(this.placeholder, element);
 
 			this.dragElement.style.visibility = 'hidden';
+			this.dragElement.style.border = 'none';
 
+			// Clone the element and style it for absolute positioning inside the placeholder
 			const clone = this.dragElement.cloneNode(true);
-			clone.style.position = 'absolute';
-			clone.style.top = '0';
-			clone.style.left = '0';
-			clone.style.width = '100%';
-			clone.style.height = '100%';
+			clone.style.position = 'absolute'; // Position absolutely within the placeholder
+			clone.style.top = '0'; // Align to the top of the placeholder
+			clone.style.left = '0'; // Align to the left of the placeholder
+			clone.style.width = '100%'; // Stretch to the width of the placeholder
+			clone.style.height = '100%'; // Stretch to the height of the placeholder
 			clone.style.visibility = 'visible';
-			clone.style.pointerEvents = 'none';
-
+			clone.style.pointerEvents = 'none'; // Ignore pointer events
+			clone.style.zIndex = '999'; // Lower z-index than the frame
 			this.placeholder.appendChild(clone);
+
+			// Create a frame that overlaps everything else
+			const frame = document.createElement('div');
+			frame.style.position = 'absolute';
+			frame.style.top = '0';
+			frame.style.left = '0';
+			frame.style.width = '100%';
+			frame.style.height = '100%';
+			frame.style.border = '2px dashed var(--interactive-accent)';
+			frame.style.boxSizing = 'border-box'; // Include border in width/height calculations
+			frame.style.zIndex = '1000'; // Higher z-index to ensure it's above the clone
+			this.placeholder.appendChild(frame);
 
 			document.addEventListener("mousemove", this.onDragMove);
 			document.addEventListener("mouseup", this.onDragEnd);
 		});
 	}
+
 
 
 	onDragMove(e) {
