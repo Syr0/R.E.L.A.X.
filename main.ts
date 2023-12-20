@@ -362,31 +362,34 @@ class RelaxSettingTab extends PluginSettingTab {
 	}
 
 	onDragEnd(e) {
-		if (!this.dragElement) {
-			return;
-		}
+		if (this.dragElement) {
+			this.dragElement.classList.remove("dragging");
 
-		this.dragElement.classList.remove("dragging");
-		const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
+			const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
+			const groupContainer = dropTarget ? dropTarget.closest('.regex-group-container') : null;
+			const groupContent = groupContainer ? groupContainer.querySelector('.regex-group-content') : null;
 
-		const groupContainer = dropTarget ? dropTarget.closest('.regex-group-container') : null;
-		const groupContent = groupContainer ? groupContainer.querySelector('.regex-group-content') : null;
-
-		if (groupContainer && groupContent) {
-			groupContent.appendChild(this.dragElement);
-		} else {
-			if (this.standaloneContainer) {
-				this.standaloneContainer.appendChild(this.dragElement);
+			if (groupContainer && groupContent) {
+				groupContent.appendChild(this.dragElement);
 			} else {
-				console.error("No standalone container found.");
+				if (this.newIndex !== null && this.currentIndex !== null && this.newIndex !== this.currentIndex) {
+					const parent = this.dragElement.parentElement;
+					if (this.newIndex >= parent.children.length) {
+						parent.appendChild(this.dragElement);
+					} else {
+						parent.insertBefore(this.dragElement, parent.children[this.newIndex + (this.newIndex > this.currentIndex ? 1 : 0)]);
+					}
+				}
 			}
-		}
 
-		this.dragElement.style.top = '0px';
-		this.dragElement = null;
-		this.updateRegexOrderFromDOM();
-		document.removeEventListener("mousemove", this.onDragMove);
-		document.removeEventListener("mouseup", this.onDragEnd);
+			this.dragElement.style.top = '0px';
+			this.dragElement = null;
+			this.updateRegexOrderFromDOM();
+			document.removeEventListener("mousemove", this.onDragMove);
+			document.removeEventListener("mouseup", this.onDragEnd);
+			this.currentIndex = null;
+			this.newIndex = null;
+		}
 	}
 
 	setHighlighted(highlight: boolean) {
@@ -475,64 +478,61 @@ class RelaxSettingTab extends PluginSettingTab {
 			const activeCheckbox = row.createEl("input", {type: "checkbox", className: "active-checkbox"});
 			activeCheckbox.checked = regex.isActive;
 
-			const inputsContainer = row.createDiv({ cls: 'inputs-container' });
-			inputsContainer.style.flexGrow = "1";
-			inputsContainer.style.display = "flex";
-			inputsContainer.style.alignItems = "center";
-
-			const keyInput = inputsContainer.createEl("input", {
+			const keyInput = row.createEl("input", {
 				type: "text",
 				className: "key-input-flex",
 				value: regex.key,
 				placeholder: "Description-Key"
 			});
-
-			const valueInput = inputsContainer.createEl("input", {
+			const valueInput = row.createEl("input", {
 				type: "text",
 				className: "value-input-flex",
 				value: regex.regex,
 				placeholder: "Regexp"
 			});
 
-			const deleteButton = row.createEl("button", { text: "Delete", className: "delete-button" });
-			deleteButton.addEventListener("click", () => {
-				row.remove();
-				this.updateRegexOrderFromDOM();
-			});
+			row.createEl("button", {text: "Delete", className: "delete-button"})
+				.addEventListener("click", () => {
+					row.remove();
+					this.updateRegexOrderFromDOM();
+				});
 
-			if (dragHandle && isGrouped)
+			if (dragHandle) this.makeDraggable(row, dragHandle);
 			valueInput.addEventListener("input", () => {
 				validateRegexInput(valueInput);
 				this.setHighlighted(true);
 			});
-		};
-
+		}
 		const addGroupUI = (group) => {
 			const groupContainer = this.keyValueContainer.createEl("div", {cls: 'regex-group-container group-container'});
-
 			groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
 			groupContainer.style.padding = "10px";
 			groupContainer.style.marginBottom = "10px";
+
 			const groupHeader = groupContainer.createEl("div", {cls: 'regex-group-header'});
 			const dragHandle = groupHeader.createEl("span", {className: "drag-handle", text: "☰"});
 			const collapseIcon = groupHeader.createEl("span", {cls: 'collapse-icon'});
 			const groupActiveCheckbox = groupHeader.createEl("input", {type: 'checkbox'});
 			groupActiveCheckbox.checked = group.isActive;
 			groupContainer.insertBefore(groupHeader, groupContainer.firstChild);
+
 			groupActiveCheckbox.addEventListener("change", () => {
 				group.isActive = groupActiveCheckbox.checked;
 				groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
 				this.setHighlighted(true);
 			});
+
 			const groupContent = groupContainer.createEl("div", {cls: 'regex-group-content'});
 			groupContent.style.display = group.isCollapsed ? "none" : "block";
 			collapseIcon.textContent = group.isCollapsed ? '►' : '▼';
+
 			collapseIcon.addEventListener("click", () => {
 				group.isCollapsed = !group.isCollapsed;
 				groupContent.style.display = group.isCollapsed ? "none" : "block";
 				collapseIcon.textContent = group.isCollapsed ? '►' : '▼';
 				this.setHighlighted(true);
 			});
+
 			const groupNameEl = groupHeader.createEl("span", {cls: 'regex-group-name', text: group.groupName});
 			groupNameEl.setAttribute("contenteditable", "true");
 			groupNameEl.addEventListener("blur", (event) => {
@@ -545,69 +545,12 @@ class RelaxSettingTab extends PluginSettingTab {
 					groupNameEl.textContent = group.groupName;
 				}
 			});
-			if (dragHandle)
-			group.regexes.forEach(regex => {
-				addRegexUI(groupContent, regex, true);
-			});
-			this.makeDraggable(groupContainer, dragHandle);
+
+			if (dragHandle) this.makeDraggable(groupContainer, dragHandle);
+			group.regexes.forEach(regex => addRegexToGroup(groupContent, regex));
 		};
 
-		if (this.plugin.settings.regexPairs && Array.isArray(this.plugin.settings.regexPairs)) {
-			this.plugin.settings.regexPairs.forEach(pair => addRegexUI(this.keyValueContainer, pair, false));
-		}
 
-		const applyValidationStyle = (textarea) => {
-			if (validateContent(textarea.value)) {
-				textarea.classList.toggle("valid-content", validateContent(textarea.value));
-			} else {
-				textarea.classList.toggle("invalid-content", !validateContent(textarea.value));
-			}
-		};
-
-		document.addEventListener("DOMContentLoaded", (event) => {
-			const modalButton = document.querySelector("#openModalButton");
-
-			modalButton.addEventListener("click", function () {
-				const modal = document.querySelector(".modal");
-				const textarea = modal.querySelector("textarea");
-
-				applyValidationStyle(textarea);
-
-				textarea.addEventListener("input", function () {
-					applyValidationStyle(textarea);
-				});
-			});
-		});
-
-		const validateRegexInput = (input) => {
-			let errorMsg = "";
-			try {
-				const reg = new RegExp(input.value);
-				const groupCount = (input.value.match(/\((?!\?)/g) || []).length;
-				if (groupCount > 1) {
-					input.classList.add("invalid-border");
-					errorMsg = "More than one group detected.";
-				} else {
-					input.classList.remove("invalid-border");
-				}
-			} catch (e) {
-				input.classList.add("invalid-border");
-				errorMsg = "Invalid regex.";
-			}
-
-			const errorElement = input.nextSibling;
-			if (errorElement && errorElement.classList.contains("regex-error")) {
-				errorElement.textContent = errorMsg;
-			} else {
-				const span = document.createElement("span");
-				span.className = "regex-error";
-				span.textContent = errorMsg;
-				input.parentNode.insertBefore(span, input.nextSibling);
-			}
-		};
-
-		this.standaloneContainer = this.keyValueContainer.createEl("div", { cls: 'standalone-regex-container' });
-		
 		const buttonsContainer = containerEl.createDiv();
 		buttonsContainer.style.display = "flex";
 		buttonsContainer.style.justifyContent = "space-between";
@@ -624,14 +567,17 @@ class RelaxSettingTab extends PluginSettingTab {
 		});
 
 		const addRegexPairButton = buttonsContainer.createEl("button", { text: "Add Regexp" });
-		addRegexPairButton.addEventListener("click", () => addRegexUI(this.keyValueContainer, { isActive: false, key: '', regex: '' }, false));
+		addRegexPairButton.addEventListener("click", () => this.addStandaloneRegexUI({ isActive: false, key: '', regex: '' }));
 
+		this.plugin.settings.regexGroups.forEach(group => addGroupUI(group));
 
-		this.plugin.settings.regexGroups.forEach(addGroupUI);
-
+		if (this.plugin.settings.regexPairs && Array.isArray(this.plugin.settings.regexPairs)) {
+			this.plugin.settings.regexPairs.forEach(pair => this.addStandaloneRegexUI(pair));
+		}
 	}
 
 	createSettingsUI(containerEl) {
+		// Ignore Links Toggle
 		new Setting(containerEl)
 			.setName("Ignore links")
 			.addToggle(toggle => {
@@ -716,7 +662,43 @@ class RelaxSettingTab extends PluginSettingTab {
 		});
 	}
 
+	private addStandaloneRegexUI(pair) {
+		const row = this.keyValueContainer.createEl("div", { cls: 'flex-row standalone-regex-row' });
 
+		const dragHandle = row.createEl("span", { className: "drag-handle", text: "☰" });
+
+		const activeCheckbox = row.createEl("input", { type: "checkbox", className: "active-checkbox" });
+		activeCheckbox.checked = pair.isActive;
+
+		const keyInput = row.createEl("input", {
+			type: "text",
+			className: "key-input-flex",
+			value: pair.key,
+			placeholder: "Description-Key"
+		});
+
+		const valueInput = row.createEl("input", {
+			type: "text",
+			className: "value-input-flex",
+			value: pair.regex,
+			placeholder: "Regexp"
+		});
+
+		const deleteButton = row.createEl("button", { text: "Delete", className: "delete-button" });
+		deleteButton.addEventListener("click", () => {
+			row.remove();
+			this.updateRegexOrderFromDOM();
+		});
+
+		const inputsContainer = row.createDiv({ cls: 'inputs-container' });
+		inputsContainer.append(keyInput, valueInput, deleteButton);
+		inputsContainer.style.flexGrow = "1";
+		inputsContainer.style.display = "flex";
+		inputsContainer.style.justifyContent = "space-between";
+		inputsContainer.style.alignItems = "center";
+
+		if (dragHandle) this.makeDraggable(row, dragHandle);
+	}
 }
 
 export default class RelaxPlugin extends Plugin {
