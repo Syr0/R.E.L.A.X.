@@ -294,7 +294,6 @@ class RelaxSettingTab extends PluginSettingTab {
 				};
 			});
 
-			// Update the settings with the new regex pairs
 			this.plugin.settings.regexPairs = regexPairs;
 			this.plugin.saveSettings();
 		};
@@ -325,17 +324,30 @@ class RelaxSettingTab extends PluginSettingTab {
 
 			this.placeholder = document.createElement('div');
 			this.placeholder.className = 'placeholder';
+			this.placeholder.style.position = 'relative';
 			this.placeholder.style.height = `${element.offsetHeight}px`;
+			this.placeholder.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+			this.placeholder.style.border = '2px dashed var(--interactive-accent)';
 			element.parentNode.insertBefore(this.placeholder, element);
+
+			this.dragElement.style.visibility = 'hidden';
+
+			const clone = this.dragElement.cloneNode(true);
+			clone.style.position = 'absolute';
+			clone.style.top = '0';
+			clone.style.left = '0';
+			clone.style.width = '100%';
+			clone.style.height = '100%';
+			clone.style.visibility = 'visible';
+			clone.style.pointerEvents = 'none';
+
+			this.placeholder.appendChild(clone);
 
 			document.addEventListener("mousemove", this.onDragMove);
 			document.addEventListener("mouseup", this.onDragEnd);
-
-			this.dragElement.style.visibility = 'hidden';
-			const clone = this.dragElement.cloneNode(true);
-			this.placeholder.appendChild(clone);
 		});
 	}
+
 
 	onDragMove(e) {
 		if (!this.dragElement) return;
@@ -367,9 +379,6 @@ class RelaxSettingTab extends PluginSettingTab {
 				parent.insertBefore(this.placeholder, closest.nextSibling);
 			}
 		}
-
-		// Visually update the placeholder to look like the dragged element
-		this.placeholder.innerHTML = this.dragElement.outerHTML;
 	}
 
 	calculateNewIndex(mouseY) {
@@ -396,7 +405,6 @@ class RelaxSettingTab extends PluginSettingTab {
 			if (this.placeholder && this.placeholder.parentNode) {
 				this.placeholder.parentNode.insertBefore(this.dragElement, this.placeholder);
 				this.dragElement.style.visibility = 'visible';
-
 				this.placeholder.remove();
 			}
 			this.dragElement.classList.remove("dragging");
