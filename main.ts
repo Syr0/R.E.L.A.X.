@@ -339,7 +339,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			clone.style.width = '100%';
 			clone.style.height = '100%';
 			clone.style.visibility = 'visible';
-			clone.style.pointerEvents = 'none'; /
+			clone.style.pointerEvents = 'none';
 			clone.style.zIndex = '999';
 			this.placeholder.appendChild(clone);
 
@@ -456,11 +456,6 @@ class RelaxSettingTab extends PluginSettingTab {
 			const regex = /\[\[(.+?)\]\]/g;
 			return !regex.test(content);
 		};
-
-
-		if (this.plugin.settings.regexPairs && Array.isArray(this.plugin.settings.regexPairs)) {
-			this.plugin.settings.regexPairs.forEach(pair => this.addStandaloneRegexUI(pair));
-		}
 
 		const applyValidationStyle = (textarea) => {
 			if (validateContent(textarea.value)) {
