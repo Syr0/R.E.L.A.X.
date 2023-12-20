@@ -478,9 +478,7 @@ class RelaxSettingTab extends PluginSettingTab {
 					applyValidationStyle(textarea);
 				});
 			});
-		});
 
-		document.addEventListener('DOMContentLoaded', () => {
 			let draggedElement = null;
 			let placeholder = null;
 
@@ -590,18 +588,20 @@ class RelaxSettingTab extends PluginSettingTab {
 				this.setHighlighted(true);
 			});
 		}
-		const addGroupUI = (group) => {
+		const addGroupUI = (group, index) => {
 			const groupContainer = this.keyValueContainer.createEl("div", {cls: 'regex-group-container group-container'});
 			groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
 			groupContainer.style.padding = "10px";
 			groupContainer.style.marginBottom = "10px";
 
 			const groupHeader = groupContainer.createEl("div", {cls: 'regex-group-header'});
+
 			const dragHandle = groupHeader.createEl("span", {className: "drag-handle", text: "☰"});
 			const collapseIcon = groupHeader.createEl("span", {cls: 'collapse-icon'});
 			const groupActiveCheckbox = groupHeader.createEl("input", {type: 'checkbox'});
 			groupActiveCheckbox.checked = group.isActive;
 			groupContainer.insertBefore(groupHeader, groupContainer.firstChild);
+
 
 			groupActiveCheckbox.addEventListener("change", () => {
 				group.isActive = groupActiveCheckbox.checked;
@@ -619,7 +619,6 @@ class RelaxSettingTab extends PluginSettingTab {
 				collapseIcon.textContent = group.isCollapsed ? '►' : '▼';
 				this.setHighlighted(true);
 			});
-
 			const groupNameEl = groupHeader.createEl("span", {cls: 'regex-group-name', text: group.groupName});
 			groupNameEl.setAttribute("contenteditable", "true");
 			groupNameEl.addEventListener("blur", (event) => {
@@ -631,6 +630,14 @@ class RelaxSettingTab extends PluginSettingTab {
 				} else {
 					groupNameEl.textContent = group.groupName;
 				}
+			});
+
+			const deleteGroupButton = groupHeader.createEl("button", {text: "Delete Group", className: "delete-group-button"});
+			deleteGroupButton.style.float = "right";
+			deleteGroupButton.addEventListener("click", () => {
+				this.plugin.settings.regexGroups.splice(index, 1);
+				this.plugin.saveSettings();
+				this.display();
 			});
 
 			if (dragHandle) this.makeDraggable(groupContainer, dragHandle);
@@ -656,7 +663,7 @@ class RelaxSettingTab extends PluginSettingTab {
 		const addRegexPairButton = buttonsContainer.createEl("button", { text: "Add Regexp" });
 		addRegexPairButton.addEventListener("click", () => this.addStandaloneRegexUI({ isActive: false, key: '', regex: '' }));
 
-		this.plugin.settings.regexGroups.forEach(group => addGroupUI(group));
+		this.plugin.settings.regexGroups.forEach((group, index) => addGroupUI(group, index));
 
 		if (this.plugin.settings.regexPairs && Array.isArray(this.plugin.settings.regexPairs)) {
 			this.plugin.settings.regexPairs.forEach(pair => this.addStandaloneRegexUI(pair));
