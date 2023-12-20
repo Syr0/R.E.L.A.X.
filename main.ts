@@ -559,6 +559,9 @@ class RelaxSettingTab extends PluginSettingTab {
 
 		const addRegexToGroup = (groupContent, regex) => {
 			const row = groupContent.createEl("div", {cls: 'flex-row'});
+			row.style.display = 'flex';
+			row.style.alignItems = 'center';
+
 			const dragHandle = row.createEl("span", {className: "drag-handle", text: "☰"});
 			const activeCheckbox = row.createEl("input", {type: "checkbox", className: "active-checkbox"});
 			activeCheckbox.checked = regex.isActive;
@@ -569,18 +572,21 @@ class RelaxSettingTab extends PluginSettingTab {
 				value: regex.key,
 				placeholder: "Description-Key"
 			});
+
 			const valueInput = row.createEl("input", {
 				type: "text",
 				className: "value-input-flex",
 				value: regex.regex,
 				placeholder: "Regexp"
 			});
+			valueInput.style.flexGrow = '1';
 
-			row.createEl("button", {text: "Delete", className: "delete-button"})
-				.addEventListener("click", () => {
-					row.remove();
-					this.updateRegexOrderFromDOM();
-				});
+			const deleteButton = row.createEl("button", {text: "Delete", className: "delete-button"});
+
+			deleteButton.addEventListener("click", () => {
+				row.remove();
+				this.updateRegexOrderFromDOM();
+			});
 
 			if (dragHandle) this.makeDraggable(row, dragHandle);
 			valueInput.addEventListener("input", () => {
@@ -588,6 +594,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				this.setHighlighted(true);
 			});
 		}
+
 		const addGroupUI = (group, index) => {
 			const groupContainer = this.keyValueContainer.createEl("div", {cls: 'regex-group-container group-container'});
 			groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
@@ -765,6 +772,8 @@ class RelaxSettingTab extends PluginSettingTab {
 
 	private addStandaloneRegexUI(pair) {
 		const row = this.keyValueContainer.createEl("div", { cls: 'flex-row standalone-regex-row' });
+		row.style.display = 'flex';
+		row.style.alignItems = 'center';
 
 		const dragHandle = row.createEl("span", { className: "drag-handle", text: "☰" });
 
@@ -784,6 +793,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			value: pair.regex,
 			placeholder: "Regexp"
 		});
+		valueInput.style.flexGrow = '1';
 
 		const deleteButton = row.createEl("button", { text: "Delete", className: "delete-button" });
 		deleteButton.addEventListener("click", () => {
