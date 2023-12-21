@@ -464,13 +464,13 @@ class RelaxSettingTab extends PluginSettingTab {
 				if (newParentGroupIndex !== -1) {
 					this.plugin.settings.regexGroups[newParentGroupIndex].regexes.push(movedRegexPair);
 				} else {
-					this.plugin.settings.regexPairs.push(movedRegexPair); // Back to standalone
+					this.plugin.settings.regexPairs.push(movedRegexPair);
 				}
 			}
 		} else {
 			const sourceGroupIndex = this.findSourceGroupIndex(this.dragElement);
 			if (sourceGroupIndex !== -1 && newParentGroupIndex === -1) {
-				if (this.dragElement.matches('.flex-row')) { // Check if the dragged element is a regex pair
+				if (this.dragElement.matches('.flex-row')) {
 					const regexIndex = this.findRegexIndexInGroup(this.dragElement, sourceGroupIndex);
 					if (regexIndex !== -1) {
 						const movedRegex = this.plugin.settings.regexGroups[sourceGroupIndex].regexes.splice(regexIndex, 1)[0];
