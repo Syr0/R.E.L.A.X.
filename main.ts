@@ -392,26 +392,6 @@ class RelaxSettingTab extends PluginSettingTab {
 		}
 	}
 
-
-	calculateNewIndex(mouseY) {
-		let newIndex = null;
-		let closestDistance = Infinity;
-
-		const parent = this.dragElement.parentElement;
-		if (parent) {
-			[...parent.children].forEach((child, idx) => {
-				if (child !== this.dragElement) {
-					const rect = child.getBoundingClientRect();
-					const distance = Math.abs(rect.top + rect.height / 2 - mouseY);
-					if (distance < closestDistance) {
-						closestDistance = distance;
-						newIndex = idx;
-					}
-				}
-			});
-		}
-		return newIndex;
-	}
 	onDragEnd() {
 		if (this.dragElement) {
 			if (this.placeholder && this.placeholder.parentNode) {
