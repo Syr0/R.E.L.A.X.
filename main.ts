@@ -439,18 +439,22 @@ class RelaxSettingTab extends PluginSettingTab {
 
 		let targetGroup = this.findClosestGroupOrStandaloneArea(e.clientY);
 		if (targetGroup) {
-			this.adjustPlaceholderPosition(targetGroup);
+			if (targetGroup.classList.contains('regex-group-container')) {
+				if (targetGroup) {
+					this.adjustPlaceholderPosition(targetGroup);
+				}
+			}
 		}
 	}
-
-
-	findRegexIndexInGroup(dragElement, sourceGroupIndex) {
+	findRegexIndexInGroup(dragElement, sourceGroupIndex)
+	{
 		const group = this.plugin.settings.regexGroups[sourceGroupIndex];
 		const regexKey = dragElement.querySelector("input[placeholder='Description-Key']").value;
 		return group.regexes.findIndex(regex => regex.key === regexKey);
 	}
 
-	onDragEnd() {
+	onDragEnd()
+	{
 		if (!this.dragElement || !this.placeholder) return;
 
 		const isStandaloneRegex = this.dragElement.classList.contains("standalone-regex-row");
