@@ -358,6 +358,45 @@ class RelaxSettingTab extends PluginSettingTab {
 			document.addEventListener("mouseup", this.onDragEnd);
 		});
 	}
+	findClosestGroupOrStandaloneArea(yPosition) {
+		let closest = null;
+		let closestDistance = Infinity;
+
+		const allContainers = this.keyValueContainer.querySelectorAll('.regex-group-container, .standalone-regex-row');
+
+		allContainers.forEach(container => {
+			const rect = container.getBoundingClientRect();
+			const containerMidpoint = window.scrollY + rect.top + rect.height / 2;
+			const distance = Math.abs(yPosition - containerMidpoint);
+
+			if (distance < closestDistance) {
+				closest = container;
+				closestDistance = distance;
+			}
+		});
+
+		return closest;
+	}
+
+	findSourceGroupIndex(dragElement) {
+		const groupContainer = dragElement.closest('.regex-group-container');
+		if (!groupContainer) return -1;
+
+		const groupName = groupContainer.querySelector(".regex-group-name").textContent.trim();
+		return this.plugin.settings.regexGroups.findIndex(group => group.groupName === groupName);
+	}
+
+	adjustPlaceholderPosition(targetGroup) {
+		if (!this.dragElement || !this.placeholder) return;
+		if (targetGroup.classList.contains('regex-group-container') || targetGroup.classList.contains('standalone-regex-row')) {
+			const parent = targetGroup.parentNode;
+
+			if (parent && (parent === this.placeholder.parentNode)) {
+				parent.insertBefore(this.placeholder, targetGroup);
+			}
+		}
+	}
+
 	onDragMove(e) {
 		if (!this.dragElement) return;
 
@@ -381,6 +420,13 @@ class RelaxSettingTab extends PluginSettingTab {
 			}
 		});
 
+		if (this.placeholder) {
+			const clone = this.placeholder.querySelector('.clone-class');
+			if (clone) {
+				clone.style.transform = `translateY(${e.clientY - this.startY}px)`;
+			}
+		}
+
 		if (closest) {
 			const rect = closest.getBoundingClientRect();
 			const childMidpoint = rect.top + scrollTop + rect.height / 2;
@@ -390,27 +436,98 @@ class RelaxSettingTab extends PluginSettingTab {
 				parent.insertBefore(this.placeholder, closest.nextSibling);
 			}
 		}
+
+		let targetGroup = this.findClosestGroupOrStandaloneArea(e.clientY);
+		if (targetGroup) {
+			this.adjustPlaceholderPosition(targetGroup);
+		}
+	}
+
+
+	findRegexIndexInGroup(dragElement, sourceGroupIndex) {
+		const group = this.plugin.settings.regexGroups[sourceGroupIndex];
+		const regexKey = dragElement.querySelector("input[placeholder='Description-Key']").value;
+		return group.regexes.findIndex(regex => regex.key === regexKey);
 	}
 
 	onDragEnd() {
-		if (this.dragElement) {
-			if (this.placeholder && this.placeholder.parentNode) {
-				this.placeholder.parentNode.insertBefore(this.dragElement, this.placeholder);
-				this.dragElement.style.visibility = 'visible';
-				this.placeholder.remove();
+		if (!this.dragElement || !this.placeholder) return;
+
+		const isStandaloneRegex = this.dragElement.classList.contains("standalone-regex-row");
+		const newParentGroupElement = this.placeholder.closest('.regex-group-container');
+		const newParentGroupIndex = this.findGroupIndex(newParentGroupElement);
+
+		if (isStandaloneRegex) {
+			const movedRegexPairIndex = this.findRegexPairIndex(this.dragElement);
+			if (movedRegexPairIndex !== -1) {
+				const movedRegexPair = this.plugin.settings.regexPairs.splice(movedRegexPairIndex, 1)[0];
+				if (newParentGroupIndex !== -1) {
+					this.plugin.settings.regexGroups[newParentGroupIndex].regexes.push(movedRegexPair);
+				} else {
+					this.plugin.settings.regexPairs.push(movedRegexPair); // Back to standalone
+				}
 			}
-			this.dragElement.classList.remove("dragging");
-			this.dragElement = null;
+		} else {
+			const sourceGroupIndex = this.findSourceGroupIndex(this.dragElement);
+			if (sourceGroupIndex !== -1 && newParentGroupIndex === -1) {
+				if (this.dragElement.matches('.flex-row')) { // Check if the dragged element is a regex pair
+					const regexIndex = this.findRegexIndexInGroup(this.dragElement, sourceGroupIndex);
+					if (regexIndex !== -1) {
+						const movedRegex = this.plugin.settings.regexGroups[sourceGroupIndex].regexes.splice(regexIndex, 1)[0];
+						this.plugin.settings.regexPairs.push(movedRegex);
+					}
+				}
+			}
 		}
 
-		if (this.placeholder) {
-			this.placeholder.remove();
-			this.placeholder = null;
+		if (!isStandaloneRegex && this.dragElement.classList.contains("regex-group-container")) {
+			const sourceGroupIndex = this.findSourceGroupIndex(this.dragElement);
+
+			if (sourceGroupIndex !== -1) {
+				const movedGroup = this.plugin.settings.regexGroups.splice(sourceGroupIndex, 1)[0];
+				const newGroupIndex = Array.from(this.placeholder.parentNode.children).indexOf(this.placeholder);
+				if (newGroupIndex > -1) {
+					this.plugin.settings.regexGroups.splice(newGroupIndex, 0, movedGroup);
+				}
+			}
 		}
 
+		this.placeholder.parentNode.insertBefore(this.dragElement, this.placeholder);
+		this.dragElement.style.visibility = 'visible';
+		this.placeholder.remove();
+		this.dragElement.classList.remove("dragging");
+		this.dragElement = null;
+		this.placeholder = null;
 		document.removeEventListener("mousemove", this.onDragMove);
 		document.removeEventListener("mouseup", this.onDragEnd);
+		this.updateRegexOrderFromDOM();
+		this.plugin.saveSettings();
 	}
+
+
+	moveGroup(sourceIndex, targetIndex) {
+		const movedGroup = this.plugin.settings.regexGroups.splice(sourceIndex, 1)[0];
+		this.plugin.settings.regexGroups.splice(targetIndex, 0, movedGroup);
+	}
+
+
+	moveGroup(sourceIndex, targetIndex) {
+		const movedGroup = this.plugin.settings.regexGroups.splice(sourceIndex, 1)[0];
+		this.plugin.settings.regexGroups.splice(targetIndex, 0, movedGroup);
+	}
+
+
+	findGroupIndex(groupElement) {
+		if (!groupElement) return -1;
+		const groupName = groupElement.querySelector(".regex-group-name").textContent.trim();
+		return this.plugin.settings.regexGroups.findIndex(group => group.groupName === groupName);
+	}
+
+	findRegexPairIndex(draggedElement) {
+		const key = draggedElement.querySelector("input[placeholder='Description-Key']").value;
+		return this.plugin.settings.regexPairs.findIndex(pair => pair.key === key);
+	}
+
 
 	setHighlighted(highlight: boolean) {
 		this.isHighlited = highlight;
@@ -861,9 +978,11 @@ export default class RelaxPlugin extends Plugin {
 				throw new Error("No settings loaded");
 			}
 		} catch (e) {
+			console.error("Error loading settings:", e);
 			await this.resetToDefaults();
 		}
 	}
+
 
 	onunload() {
 	}
