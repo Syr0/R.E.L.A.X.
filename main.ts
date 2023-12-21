@@ -456,6 +456,7 @@ class RelaxSettingTab extends PluginSettingTab {
 		const isStandaloneRegex = this.dragElement.classList.contains("standalone-regex-row");
 		const newParentGroupElement = this.placeholder.closest('.regex-group-container');
 		const newParentGroupIndex = this.findGroupIndex(newParentGroupElement);
+		const draggedElementIsGroup = this.dragElement.classList.contains("regex-group-container");
 
 		if (isStandaloneRegex) {
 			const movedRegexPairIndex = this.findRegexPairIndex(this.dragElement);
@@ -467,27 +468,29 @@ class RelaxSettingTab extends PluginSettingTab {
 					this.plugin.settings.regexPairs.push(movedRegexPair);
 				}
 			}
-		} else {
+		} else if (!draggedElementIsGroup) {
 			const sourceGroupIndex = this.findSourceGroupIndex(this.dragElement);
-			if (sourceGroupIndex !== -1 && newParentGroupIndex === -1) {
-				if (this.dragElement.matches('.flex-row')) {
-					const regexIndex = this.findRegexIndexInGroup(this.dragElement, sourceGroupIndex);
-					if (regexIndex !== -1) {
-						const movedRegex = this.plugin.settings.regexGroups[sourceGroupIndex].regexes.splice(regexIndex, 1)[0];
+			if (sourceGroupIndex !== -1) {
+				const regexIndex = this.findRegexIndexInGroup(this.dragElement, sourceGroupIndex);
+				if (regexIndex !== -1) {
+					const movedRegex = this.plugin.settings.regexGroups[sourceGroupIndex].regexes.splice(regexIndex, 1)[0];
+					if (newParentGroupIndex !== -1) {
+						this.plugin.settings.regexGroups[newParentGroupIndex].regexes.push(movedRegex);
+					} else {
 						this.plugin.settings.regexPairs.push(movedRegex);
 					}
 				}
 			}
 		}
 
-		if (!isStandaloneRegex && this.dragElement.classList.contains("regex-group-container")) {
+		if (draggedElementIsGroup) {
 			const sourceGroupIndex = this.findSourceGroupIndex(this.dragElement);
-
 			if (sourceGroupIndex !== -1) {
 				const movedGroup = this.plugin.settings.regexGroups.splice(sourceGroupIndex, 1)[0];
-				const newGroupIndex = Array.from(this.placeholder.parentNode.children).indexOf(this.placeholder);
-				if (newGroupIndex > -1) {
-					this.plugin.settings.regexGroups.splice(newGroupIndex, 0, movedGroup);
+				if (newParentGroupIndex !== -1) {
+					this.plugin.settings.regexGroups.splice(newParentGroupIndex, 0, movedGroup);
+				} else {
+					this.plugin.settings.regexGroups.push(movedGroup);
 				}
 			}
 		}
@@ -502,18 +505,6 @@ class RelaxSettingTab extends PluginSettingTab {
 		document.removeEventListener("mouseup", this.onDragEnd);
 		this.updateRegexOrderFromDOM();
 		this.plugin.saveSettings();
-	}
-
-
-	moveGroup(sourceIndex, targetIndex) {
-		const movedGroup = this.plugin.settings.regexGroups.splice(sourceIndex, 1)[0];
-		this.plugin.settings.regexGroups.splice(targetIndex, 0, movedGroup);
-	}
-
-
-	moveGroup(sourceIndex, targetIndex) {
-		const movedGroup = this.plugin.settings.regexGroups.splice(sourceIndex, 1)[0];
-		this.plugin.settings.regexGroups.splice(targetIndex, 0, movedGroup);
 	}
 
 
