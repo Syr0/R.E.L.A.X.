@@ -5,7 +5,9 @@
   <a href="#"><img src="https://img.shields.io/badge/Version-1.4.2-blue"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-MIT-orange"></a>
   <a href="#"><img src="https://img.shields.io/badge/Support-Weekly-brightgreen"></a>
-  <a href="#"><img src="https://img.shields.io/badge/KnownBugs-0-green"></a>
+  <a href="#"><img src="https://img.shields.io/badge/KnownBugs-2-red"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Status-broken-red"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Status-Fixing... 04.01.2024-red"></a>
   <a href="#"><img src="https://img.shields.io/badge/Status-Stable-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-3-pink"></a>
   <a href="#"><img src="https://img.shields.io/badge/ObsidianCommunityPlugin-Approved-red"></a></h1>
