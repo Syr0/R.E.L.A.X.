@@ -7,8 +7,7 @@
   <a href="#"><img src="https://img.shields.io/badge/Support-Weekly-brightgreen"></a>
   <a href="#"><img src="https://img.shields.io/badge/KnownBugs-2-red"></a>
   <a href="#"><img src="https://img.shields.io/badge/Status-broken-red"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Status-Fixing... 04.01.2024-red"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Status-Stable-green"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Note-Fixing... 04.01.2024-red"></a>
   <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-3-pink"></a>
   <a href="#"><img src="https://img.shields.io/badge/ObsidianCommunityPlugin-Approved-red"></a></h1>
 </p>
