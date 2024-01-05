@@ -798,39 +798,46 @@ export default class RelaxPlugin extends Plugin {
 	async addBrackets() {
 		const activeLeaf = this.app.workspace.activeLeaf;
 
-		if (!activeLeaf) {
+		if (!activeLeaf || !activeLeaf.view) {
 			new Notice("Please open a markdown file or select a folder");
 			return;
 		}
 
-		const view = activeLeaf.view;
-		if (!view) {
-			new Notice("Unknown item selected. Please select a markdown file or folder");
+		// Function to check if the item is selected
+		function isSelected(item) {
+			return item.selfEl && item.selfEl.classList.contains("has-focus");
+		}
+
+		let selectedFileItem = null;
+
+		// Iterating through fileItems to find the selected item
+		for (const key in activeLeaf.view.fileItems) {
+			if (Object.prototype.hasOwnProperty.call(activeLeaf.view.fileItems, key)) {
+				const item = activeLeaf.view.fileItems[key];
+				if (isSelected(item)) {
+					selectedFileItem = item;
+					break;
+				}
+			}
+		}
+
+		if (!selectedFileItem) {
+			new Notice("No markdown file or folder is currently selected. Please select one.");
 			return;
 		}
 
-		if (view instanceof MarkdownView) {
-			const editor = view.editor;
-			const selection = editor.getSelection();
-
-			if (selection && selection.trim().length !== 0) {
-				const updatedSelection = this.updateSelection(selection, this.settings);
-				editor.replaceSelection(updatedSelection);
-				new Notice("Added brackets in selection!");
-			} else {
-				await this.addBracketsForFile();
-				new Notice("Updated entire file!");
-			}
-		} else if (view.focusedItem && view.focusedItem.collapsible) {
-			const folderPath = view.focusedItem.file.path;
+		if (selectedFileItem.collapsible) {
+			// It's a selected folder
+			const folderPath = selectedFileItem.file.path;
 			await this.addBracketsForFolder(folderPath);
-		} else if (view.focusedItem && !view.focusedItem.collapsible) {
-			const filePath = view.focusedItem.file.path;
-			await this.addBracketsForFile(filePath);
 		} else {
-			new Notice("No markdown file or folder is currently selected. Please select one.");
+			// It's a selected file
+			const filePath = selectedFileItem.file.path;
+			await this.addBracketsForFile(filePath);
 		}
 	}
+
+
 
 	async addBracketsForFolder(folderPath: string) {
 		const files = this.app.vault.getMarkdownFiles().filter(file => file.path.startsWith(folderPath));
