@@ -2,7 +2,7 @@
   <img src="Logo.png" alt="R.E.L.A.X Logo">
   <h1 align="center">R.E.L.A.X. (Regular Expression Link Analysis Xpert)
   <br>
-  <a href="#"><img src="https://img.shields.io/badge/Version-1.4.4-blue"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Version-1.4.5-blue"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-MIT-orange"></a>
   <a href="#"><img src="https://img.shields.io/badge/Support-Weekly-brightgreen"></a>
 <<<<<<< Updated upstream
