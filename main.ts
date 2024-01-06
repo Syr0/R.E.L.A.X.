@@ -993,6 +993,7 @@ export default class RelaxPlugin extends Plugin {
 
 	async addBracketsForFile(noteFilePath = "") {
 		await this.processFileContent(noteFilePath, (content) => this.updateSelection(content, this.settings));
+		new Notice(`File processed.`);
 	}
 
 	async removeBracketsinFile(noteFilePath = "") {
@@ -1167,14 +1168,29 @@ export default class RelaxPlugin extends Plugin {
 			return;
 		}
 
-		// Function to check if the item is selected
+		if (activeLeaf.view instanceof MarkdownView) {
+			const editor = activeLeaf.view.editor;
+			const selection = editor.getSelection();
+
+			if (selection && selection.trim().length !== 0) {
+				const updatedSelection = this.updateSelection(selection, this.settings);
+				editor.replaceSelection(updatedSelection);
+				new Notice("Added brackets in selection!");
+				return;
+			} else {
+				const filePath = activeLeaf.view.file.path;
+				await this.addBracketsForFile(filePath);
+				new Notice("Updated entire file!");
+				return;
+			}
+		}
+
 		function isSelected(item) {
 			return item.selfEl && item.selfEl.classList.contains("has-focus");
 		}
 
 		let selectedFileItem = null;
 
-		// Iterating through fileItems to find the selected item
 		for (const key in activeLeaf.view.fileItems) {
 			if (Object.prototype.hasOwnProperty.call(activeLeaf.view.fileItems, key)) {
 				const item = activeLeaf.view.fileItems[key];
@@ -1191,17 +1207,13 @@ export default class RelaxPlugin extends Plugin {
 		}
 
 		if (selectedFileItem.collapsible) {
-			// It's a selected folder
 			const folderPath = selectedFileItem.file.path;
 			await this.addBracketsForFolder(folderPath);
 		} else {
-			// It's a selected file
 			const filePath = selectedFileItem.file.path;
 			await this.addBracketsForFile(filePath);
 		}
 	}
-
-
 
 	async addBracketsForFolder(folderPath: string) {
 		const files = this.app.vault.getMarkdownFiles().filter(file => file.path.startsWith(folderPath));

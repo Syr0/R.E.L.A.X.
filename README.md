@@ -2,14 +2,20 @@
   <img src="Logo.png" alt="R.E.L.A.X Logo">
   <h1 align="center">R.E.L.A.X. (Regular Expression Link Analysis Xpert)
   <br>
-  <a href="#"><img src="https://img.shields.io/badge/Version-1.4.3-blue"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Version-1.4.6-blue"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-MIT-orange"></a>
   <a href="#"><img src="https://img.shields.io/badge/Support-Weekly-brightgreen"></a>
+<<<<<<< Updated upstream
+  <a href="#"><img src="https://img.shields.io/badge/KnownBugs-0-green"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Stable-green"></a>
+  <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-2-pink"></a>
+  <a href="#"><img src="https://img.shields.io/badge/ChatGPT-Approved-red"></a></h1>
+=======
   <a href="#"><img src="https://img.shields.io/badge/KnownBugs-2-red"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Status-broken-red"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Note-Fixing... 05.01.2024-red"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Status-stable-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-3-pink"></a>
   <a href="#"><img src="https://img.shields.io/badge/ObsidianCommunityPlugin-Approved-red"></a></h1>
+>>>>>>> Stashed changes
 </p>
 
 
