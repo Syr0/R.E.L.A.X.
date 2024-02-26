@@ -6,8 +6,6 @@ interface RegexGroup {
 	regexes: Array<{ isActive: boolean, key: string, regex: string }>;
 	isCollapsed?: boolean;
 }
-
-
 interface RelaxPluginSettings {
 	regexGroups: Array<RegexGroup>;
 	regexPairs: Array<{ isActive: boolean, key: string, regex: string }>;
@@ -17,7 +15,7 @@ interface RelaxPluginSettings {
 	ignoreCodeBlocks?: boolean;
 }
 
-const DEFAULT_SETTINGS: RelaxPluginSettings = {
+var DEFAULT_SETTINGS = {
 	regexPairs: [],
 	regexGroups: [
 		{
@@ -36,7 +34,7 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 				},
 				{
 					"isActive": true,
-					"key": "IP",
+					"key": "IPv4",
 					"regex": "\\b((?:(?:(?!1?2?7\\.0\\.0\\.1)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))\\b"
 				},
 				{
@@ -81,8 +79,8 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 				},
 				{
 					"isActive": true,
-					"key": "Markdown ´",
-					"regex": "(?:[´](((?:(?!<br>|\\r|\\n)[^´ ]){4,30}))[´])"
+					"key": "Markdown \xB4",
+					"regex": "(?:[\xB4](((?:(?!<br>|\\r|\\n)[^\xB4 ]){4,30}))[\xB4])"
 				},
 				{
 					"isActive": true,
@@ -91,18 +89,58 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 				},
 				{
 					"isActive": true,
-					"key": "Markdown ‘",
-					"regex": "(?:[‘](((?:(?!<br>|\\r|\\n)[^‘ ]){4,30}))[‘])"
+					"key": "CVEs",
+					"regex": "(CVE-(1999|2\\d{3})-(?!0{4})(0\\d{2}[0-9]|[1-9]\\d{3,}))"
 				},
 				{
 					"isActive": true,
-					"key": "Markdown ’",
-					"regex": "(?:[’](((?:(?!<br>|\\r|\\n)[^’ ]){4,30}))[’])"
+					"key": "MAC Address",
+					"regex": "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})"
 				},
 				{
 					"isActive": true,
-					"key": "Markdown \"",
-					"regex": "(?:[\"„″”](((?:(?!<br>|\\r|\\n)[^\"″” ]){4,30}))[\"″”])"
+					"key": "Tor Onion Address",
+					"regex": "(?:https?://)?(?:www)?(\\S*?\\.onion)\\b)"
+				},
+				{
+					"isActive": true,
+					"key": "IPv6 Address",
+					"regex": "((?:[0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
+				},
+				{
+					"isActive": true,
+					"key": "SSDeep",
+					"regex": "(\\d+:[a-z+/A-Z0-9]+:[a-z+/A-Z0-9]+,\\\"[^\\\"]+\\\")"
+				},
+				{
+					"isActive": true,
+					"key": "VT subitter",
+					"regex": "([0-9a-f]{8} - (?:api|web)"
+				},
+				{
+					"isActive": true,
+					"key": "MAC Adresses",
+					"regex": "((?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2}))"
+				},
+				{
+					"isActive": true,
+					"key": "Passport",
+					"regex": "([A-PR-WY][1-9]\\d\\s?\\d{4}[1-9])"
+				},
+				{
+					"isActive": true,
+					"key": "Markdown \u2018",
+					"regex": "(?:[\u2018](((?:(?!<br>|\\r|\\n)[^\u2018 ]){4,30}))[\u2018])"
+				},
+				{
+					"isActive": true,
+					"key": "Markdown \u2019",
+					"regex": "(?:[\u2019](((?:(?!<br>|\\r|\\n)[^\u2019 ]){4,30}))[\u2019])"
+				},
+				{
+					"isActive": true,
+					"key": 'Markdown "',
+					"regex": '(?:["\u201E\u2033\u201D](((?:(?!<br>|\\r|\\n)[^"\u2033\u201D ]){4,30}))["\u2033\u201D])'
 				},
 				{
 					"isActive": true,
@@ -111,23 +149,8 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 				},
 				{
 					"isActive": true,
-					"key": "Markdown ‘’",
-					"regex": "(?:[‘](((?:(?!<br>|\\r|\\n)[^’ ]){4,30}))[’])"
-				},
-				{
-					"isActive": true,
-					"key": "Windows Forensics",
-					"regex": "([\\w]+.(?:bat|ps1|dll|exe|reg))[\\b]"
-				},
-				{
-					"isActive": true,
-					"key": "Linux Forensics",
-					"regex": "([\\w]+\\.(?:sh|so|conf|tar.gz))[\\b]"
-				},
-				{
-					"isActive": true,
-					"key": "Mac Forensics",
-					"regex": "([\\w]+\\.(?:app|pkg|dmg))[\\b]"
+					"key": "Markdown \u2018\u2019",
+					"regex": "(?:[\u2018](((?:(?!<br>|\\r|\\n)[^\u2019 ]){4,30}))[\u2019])"
 				},
 				{
 					"isActive": true,
@@ -165,26 +188,6 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 					"regex": "\\bIntel Core i[3579]-[0-9]{4}[HQGU]K?|AMD Ryzen [3579] [0-9]{4}X?\\b"
 				},
 				{
-					"isActive": true,
-					"key": "Images",
-					"regex": "([\\w]+\\.(?:jpg|jpeg|png|gif|bmp|tiff))[\\b]"
-				},
-				{
-					"isActive": true,
-					"key": "Movies",
-					"regex": "([\\w]+\\.(?:mp4|avi|mkv|mov|wmv))[\\b]"
-				},
-				{
-					"isActive": true,
-					"key": "Audio",
-					"regex": "([\\w]+\\.(?:mp3|wav|aac|flac))[\\b]"
-				},
-				{
-					"isActive": false,
-					"key": "Harmless Files",
-					"regex": "([\\w]+\\.(?:txt|asc|csv|log|md))[\\b]"
-				},
-				{
 					"isActive": false,
 					"key": "Base64 Strings",
 					"regex": "([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?"
@@ -211,7 +214,7 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 				},
 				{
 					"isActive": false,
-					"key": "Social Media Hashtags",
+					"key": "Hashtags",
 					"regex": "#[A-Za-z0-9_]+"
 				},
 				{
@@ -222,9 +225,9 @@ const DEFAULT_SETTINGS: RelaxPluginSettings = {
 				{
 					"isActive": false,
 					"key": "Temperature Readings",
-					"regex": "\\b-?[0-9]+\\s?(°C|°F|K)\\b"
+					"regex": "\\b-?[0-9]+\\s?(\xB0C|\xB0F|K)\\b"
 				}
-			],
+			]
 		}
 	],
 	ignoreLinks: true,
@@ -645,33 +648,53 @@ class RelaxSettingTab extends PluginSettingTab {
 		}
 
 		const addGroupUI = (group, index) => {
-			const groupContainer = this.keyValueContainer.createEl("div", {cls: 'regex-group-container group-container'});
+
+			const groupContainer = this.keyValueContainer.createEl("div", { cls: 'regex-group-container group-container' });
 			groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
 			groupContainer.style.padding = "10px";
 			groupContainer.style.marginBottom = "10px";
 
 			const groupHeader = groupContainer.createEl("div", { cls: "regex-group-header" });
-			groupHeader.style.display = "flex";
-			groupHeader.style.justifyContent = "space-between";
-			groupHeader.style.alignItems = "center";
-			groupContainer.insertBefore(groupHeader, groupContainer.firstChild);
 
-			const dragHandle = groupHeader.createEl("span", { className: "drag-handle", text: "\u2630" });
-			const groupNameEl = groupHeader.createEl("span", { cls: "regex-group-name", text: group.groupName });
+			const groupNameAndControls = groupHeader.createDiv({ cls: "group-name-and-controls" });
+
+			const dragHandle = groupNameAndControls.createEl("span", { className: "drag-handle", text: "\u2630" });
+			const collapseIcon = groupNameAndControls.createEl("span", { cls: 'collapse-icon' });
+			collapseIcon.textContent = group.isCollapsed ? '►' : '▼';
+
+			const groupActiveCheckbox = groupNameAndControls.createEl("input", { type: 'checkbox' });
+			groupActiveCheckbox.checked = group.isActive;
+
+			const groupNameEl = groupNameAndControls.createEl("span", { cls: "regex-group-name", text: group.groupName });
 			groupNameEl.setAttribute("contenteditable", "true");
 
-			const collapseIcon = groupHeader.createEl("span", {cls: 'collapse-icon'});
-			const groupActiveCheckbox = groupHeader.createEl("input", {type: 'checkbox'});
-			groupActiveCheckbox.checked = group.isActive;
+			const controlButtons = groupHeader.createDiv({ cls: "control-buttons" });
+
+			const addRegexButton = controlButtons.createEl("button", { text: "Add Regex", className: "add-regex-button" });
+			const deleteGroupButton = controlButtons.createEl("button", { text: "Delete Group", className: "delete-group-button" });
+
 			groupActiveCheckbox.addEventListener("change", () => {
 				group.isActive = groupActiveCheckbox.checked;
 				groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
 				this.setHighlighted(true);
 			});
 
-			const groupContent = groupContainer.createEl("div", {cls: 'regex-group-content'});
+			const groupContent = groupContainer.createEl("div", { cls: 'regex-group-content' });
 			groupContent.style.display = group.isCollapsed ? "none" : "block";
-			collapseIcon.textContent = group.isCollapsed ? '►' : '▼';
+
+
+			addRegexButton.addEventListener("click", () => {
+				const newRegex = { isActive: true, key: "New Key", regex: "New Regex" };
+				group.regexes.unshift(newRegex);
+				this.plugin.saveSettings();
+				this.display();
+			});
+
+			deleteGroupButton.addEventListener("click", () => {
+				this.plugin.settings.regexGroups.splice(index, 1);
+				this.plugin.saveSettings();
+				this.display();
+			});
 
 			collapseIcon.addEventListener("click", () => {
 				group.isCollapsed = !group.isCollapsed;
@@ -680,7 +703,6 @@ class RelaxSettingTab extends PluginSettingTab {
 				this.setHighlighted(true);
 			});
 
-			groupNameEl.setAttribute("contenteditable", "true");
 			groupNameEl.addEventListener("blur", (event) => {
 				const newName = groupNameEl.textContent.trim();
 				if (newName.length > 0 && newName !== group.groupName) {
@@ -692,24 +714,8 @@ class RelaxSettingTab extends PluginSettingTab {
 				}
 			});
 
-			const controlButtonsContainer = groupHeader.createDiv({ cls: "group-control-buttons" });
-
-			const addRegexButton = controlButtonsContainer.createEl("button", { text: "Add Regexp", className: "add-regex-button" });
-			addRegexButton.addEventListener("click", () => {
-				const newRegex = { isActive: true, key: "New Key", regex: "New Regex" };
-				group.regexes.push(newRegex);
-				addRegexToGroup(groupContent, newRegex);
-				this.updateRegexOrderFromDOM();
-			});
-
-			const deleteGroupButton = controlButtonsContainer.createEl("button", { text: "Delete Group", className: "delete-group-button" });
-			deleteGroupButton.addEventListener("click", () => {
-				this.plugin.settings.regexGroups.splice(index, 1);
-				this.plugin.saveSettings();
-				this.display();
-			});
-
 			if (dragHandle) this.makeDraggable(groupContainer, dragHandle);
+
 			group.regexes.forEach(regex => addRegexToGroup(groupContent, regex));
 		};
 
