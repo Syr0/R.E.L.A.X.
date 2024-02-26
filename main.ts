@@ -641,6 +641,10 @@ class RelaxSettingTab extends PluginSettingTab {
 			});
 
 			if (dragHandle) this.makeDraggable(row, dragHandle);
+			keyInput.addEventListener("input", () => {
+				this.setHighlighted(true);
+			});
+
 			valueInput.addEventListener("input", () => {
 				validateRegexInput(valueInput);
 				this.setHighlighted(true);
