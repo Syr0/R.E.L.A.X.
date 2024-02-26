@@ -453,60 +453,17 @@ class RelaxSettingTab extends PluginSettingTab {
 		return group.regexes.findIndex(regex => regex.key === regexKey);
 	}
 
-	onDragEnd()
-	{
-		if (!this.dragElement || !this.placeholder) return;
-
-		const isStandaloneRegex = this.dragElement.classList.contains("standalone-regex-row");
-		const newParentGroupElement = this.placeholder.closest('.regex-group-container');
-		const newParentGroupIndex = this.findGroupIndex(newParentGroupElement);
-		const draggedElementIsGroup = this.dragElement.classList.contains("regex-group-container");
-
-		if (isStandaloneRegex) {
-			const movedRegexPairIndex = this.findRegexPairIndex(this.dragElement);
-			if (movedRegexPairIndex !== -1) {
-				const movedRegexPair = this.plugin.settings.regexPairs.splice(movedRegexPairIndex, 1)[0];
-				if (newParentGroupIndex !== -1) {
-					this.plugin.settings.regexGroups[newParentGroupIndex].regexes.push(movedRegexPair);
-				} else {
-					this.plugin.settings.regexPairs.push(movedRegexPair);
-				}
-			}
-		} else if (!draggedElementIsGroup) {
-			const sourceGroupIndex = this.findSourceGroupIndex(this.dragElement);
-			if (sourceGroupIndex !== -1) {
-				const regexIndex = this.findRegexIndexInGroup(this.dragElement, sourceGroupIndex);
-				if (regexIndex !== -1) {
-					const movedRegex = this.plugin.settings.regexGroups[sourceGroupIndex].regexes.splice(regexIndex, 1)[0];
-					if (newParentGroupIndex !== -1) {
-						this.plugin.settings.regexGroups[newParentGroupIndex].regexes.push(movedRegex);
-					} else {
-						this.plugin.settings.regexPairs.push(movedRegex);
-					}
-				}
-			}
-		}
-
-		if (draggedElementIsGroup) {
-			const sourceGroupIndex = this.findSourceGroupIndex(this.dragElement);
-			if (sourceGroupIndex !== -1) {
-				const movedGroup = this.plugin.settings.regexGroups.splice(sourceGroupIndex, 1)[0];
-				if (newParentGroupIndex !== -1) {
-					this.plugin.settings.regexGroups.splice(newParentGroupIndex, 0, movedGroup);
-				} else {
-					this.plugin.settings.regexGroups.push(movedGroup);
-				}
-			}
-		}
+	onDragEnd() {
+		if (!this.dragElement || !this.placeholder)
+			return;
 
 		this.placeholder.parentNode.insertBefore(this.dragElement, this.placeholder);
-		this.dragElement.style.visibility = 'visible';
+		this.dragElement.style.visibility = "visible";
 		this.placeholder.remove();
 		this.dragElement.classList.remove("dragging");
 		this.dragElement = null;
 		this.placeholder = null;
-		document.removeEventListener("mousemove", this.onDragMove);
-		document.removeEventListener("mouseup", this.onDragEnd);
+
 		this.updateRegexOrderFromDOM();
 		this.plugin.saveSettings();
 	}
@@ -693,15 +650,19 @@ class RelaxSettingTab extends PluginSettingTab {
 			groupContainer.style.padding = "10px";
 			groupContainer.style.marginBottom = "10px";
 
-			const groupHeader = groupContainer.createEl("div", {cls: 'regex-group-header'});
+			const groupHeader = groupContainer.createEl("div", { cls: "regex-group-header" });
+			groupHeader.style.display = "flex";
+			groupHeader.style.justifyContent = "space-between";
+			groupHeader.style.alignItems = "center";
+			groupContainer.insertBefore(groupHeader, groupContainer.firstChild);
 
-			const dragHandle = groupHeader.createEl("span", {className: "drag-handle", text: "☰"});
+			const dragHandle = groupHeader.createEl("span", { className: "drag-handle", text: "\u2630" });
+			const groupNameEl = groupHeader.createEl("span", { cls: "regex-group-name", text: group.groupName });
+			groupNameEl.setAttribute("contenteditable", "true");
+
 			const collapseIcon = groupHeader.createEl("span", {cls: 'collapse-icon'});
 			const groupActiveCheckbox = groupHeader.createEl("input", {type: 'checkbox'});
 			groupActiveCheckbox.checked = group.isActive;
-			groupContainer.insertBefore(groupHeader, groupContainer.firstChild);
-
-
 			groupActiveCheckbox.addEventListener("change", () => {
 				group.isActive = groupActiveCheckbox.checked;
 				groupContainer.style.border = group.isActive ? "1px solid var(--interactive-accent)" : "1px solid #ccc";
@@ -718,7 +679,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				collapseIcon.textContent = group.isCollapsed ? '►' : '▼';
 				this.setHighlighted(true);
 			});
-			const groupNameEl = groupHeader.createEl("span", {cls: 'regex-group-name', text: group.groupName});
+
 			groupNameEl.setAttribute("contenteditable", "true");
 			groupNameEl.addEventListener("blur", (event) => {
 				const newName = groupNameEl.textContent.trim();
@@ -731,8 +692,17 @@ class RelaxSettingTab extends PluginSettingTab {
 				}
 			});
 
-			const deleteGroupButton = groupHeader.createEl("button", {text: "Delete Group", className: "delete-group-button"});
-			deleteGroupButton.style.float = "right";
+			const controlButtonsContainer = groupHeader.createDiv({ cls: "group-control-buttons" });
+
+			const addRegexButton = controlButtonsContainer.createEl("button", { text: "Add Regexp", className: "add-regex-button" });
+			addRegexButton.addEventListener("click", () => {
+				const newRegex = { isActive: true, key: "New Key", regex: "New Regex" };
+				group.regexes.push(newRegex);
+				addRegexToGroup(groupContent, newRegex);
+				this.updateRegexOrderFromDOM();
+			});
+
+			const deleteGroupButton = controlButtonsContainer.createEl("button", { text: "Delete Group", className: "delete-group-button" });
 			deleteGroupButton.addEventListener("click", () => {
 				this.plugin.settings.regexGroups.splice(index, 1);
 				this.plugin.saveSettings();
@@ -774,6 +744,8 @@ class RelaxSettingTab extends PluginSettingTab {
 		if (this.plugin.settings.regexPairs && Array.isArray(this.plugin.settings.regexPairs)) {
 			this.plugin.settings.regexPairs.forEach(pair => this.addStandaloneRegexUI(pair));
 		}
+
+
 	}
 
 	createSettingsUI(containerEl) {
