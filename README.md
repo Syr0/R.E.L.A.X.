@@ -2,24 +2,40 @@
   <img src="Logo.png" alt="R.E.L.A.X Logo">
   <h1 align="center">R.E.L.A.X. (Regular Expression Link Analysis Xpert)
   <br>
-  <a href="#"><img src="https://img.shields.io/badge/Version-1.4.6-blue"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Version-1.5.0-blue"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-MIT-orange"></a>
   <a href="#"><img src="https://img.shields.io/badge/Support-Weekly-brightgreen"></a>
-<<<<<<< Updated upstream
   <a href="#"><img src="https://img.shields.io/badge/KnownBugs-0-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/Stable-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-2-pink"></a>
   <a href="#"><img src="https://img.shields.io/badge/ChatGPT-Approved-red"></a></h1>
-=======
-  <a href="#"><img src="https://img.shields.io/badge/KnownBugs-2-red"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Status-stable-green"></a>
-  <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-3-pink"></a>
-  <a href="#"><img src="https://img.shields.io/badge/ObsidianCommunityPlugin-Approved-red"></a></h1>
->>>>>>> Stashed changes
-</p>
+	</p>
 
 
 Enhance your Obsidian experience with R.E.L.A.X., a powerful plugin that leverages regular expressions for dynamic and intelligent note linking.
+
+### USAGE:
+- **Rightclick, click "R.E.L.A.X.". This will put all the Information found via predefined regex into brackets, linking your files.
+- **Open Settings and set up your own custom Regular Expression. Note: Each RegEx should have exactly one catching group.
+
+## Example: ##
+
+**Regular Expression for Digits:**
+- 12345
+- 23456
+- 54468
+
+**Your Regex would be like this:**
+- (\d{5)
+- ([1-9]{5})
+- ([1-9][1-9][1-9][1-9][1-9])
+
+**Not allowed would be this:**
+- (([1-9])([1-9])([1-9])([1-9])([1-9]))
+
+Because it is unclear which group to link. To cause a group not to capture, write <span style="color:red">?:</span> at the beginning.
+- **This would be the same (crap), but it would work:
+- **((<span style="color:red">?:</span>[1-9])(<span style="color:red">?:</span>[1-9])(<span style="color:red">?:</span>[1-9])(<span style="color:red">?:</span>[1-9])(<span style="color:red">?:</span>[1-9]))
 
 ### Features That Let You Chill:
 
