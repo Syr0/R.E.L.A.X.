@@ -282,7 +282,6 @@ class RelaxSettingTab extends PluginSettingTab {
 
 			if (this.plugin && this.plugin.settings) {
 				this.plugin.settings.regexGroups = regexGroups;
-				this.plugin.saveSettings();
 			} else {
 				console.error("Plugin or settings not available");
 			}
@@ -304,6 +303,7 @@ class RelaxSettingTab extends PluginSettingTab {
 
 		this.saveChanges = () => {
 			this.updateRegexOrderFromDOM();
+			this.plugin.saveSettings();
 			const closeButton = document.querySelector(".modal-close-button");
 			if (closeButton) {
 				closeButton.click();
@@ -638,6 +638,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			deleteButton.addEventListener("click", () => {
 				row.remove();
 				this.updateRegexOrderFromDOM();
+				this.plugin.saveSettings();
 			});
 
 			if (dragHandle) this.makeDraggable(row, dragHandle);
@@ -675,6 +676,7 @@ class RelaxSettingTab extends PluginSettingTab {
 			const controlButtons = groupHeader.createDiv({ cls: "control-buttons" });
 
 			const addRegexButton = controlButtons.createEl("button", { text: "Add Regex", className: "add-regex-button" });
+
 			const deleteGroupButton = controlButtons.createEl("button", { text: "Delete Group", className: "delete-group-button" });
 
 			groupActiveCheckbox.addEventListener("change", () => {
@@ -688,8 +690,18 @@ class RelaxSettingTab extends PluginSettingTab {
 
 
 			addRegexButton.addEventListener("click", () => {
-				const newRegex = { isActive: true, key: "New Key", regex: "New Regex" };
-				group.regexes.unshift(newRegex);
+				group.regexes = Array.from(groupContainer.querySelectorAll(".regex-group-content .flex-row")).map(row => {
+					const keyInput = row.querySelector("input[placeholder='Description-Key']");
+					const valueInput = row.querySelector("input[placeholder='Regexp']");
+					const regexActiveCheckbox = row.querySelector("input[type='checkbox']");
+					return {
+						isActive: regexActiveCheckbox ? regexActiveCheckbox.checked : false,
+						key: keyInput ? keyInput.value : "",
+						regex: valueInput ? valueInput.value : ""
+					};
+				});
+				group.regexes.unshift({ isActive: true, key: "New Key", regex: "New Regex" });
+				this.plugin.settings.regexGroups[index] = group;
 				this.plugin.saveSettings();
 				this.display();
 			});
@@ -712,6 +724,7 @@ class RelaxSettingTab extends PluginSettingTab {
 				if (newName.length > 0 && newName !== group.groupName) {
 					group.groupName = newName;
 					this.updateRegexOrderFromDOM();
+					this.plugin.saveSettings();
 					new Notice("Group name updated.");
 				} else {
 					groupNameEl.textContent = group.groupName;
@@ -873,6 +886,7 @@ class RelaxSettingTab extends PluginSettingTab {
 		deleteButton.addEventListener("click", () => {
 			row.remove();
 			this.updateRegexOrderFromDOM();
+			this.plugin.saveSettings();
 		});
 
 		const inputsContainer = row.createDiv({ cls: 'inputs-container' });
