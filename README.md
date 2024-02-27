@@ -12,7 +12,7 @@
 	</p>
 
 
-Enhance your Obsidian experience with R.E.L.A.X., a powerful plugin that leverages regular expressions for dynamic and intelligent note linking.
+Enhance your Obsidian experience with R.E.L.A.X., a powerful regex plugin that leverages regular expressions for dynamic and intelligent note linking.
 
 ### USAGE:
 - **Rightclick, click "R.E.L.A.X.". This will put all the Information found via predefined regex into brackets, linking your files.
@@ -37,33 +37,13 @@ Because it is unclear which group to link. To cause a group not to capture, writ
 - **This would be the same (crap), but it would work:
 - **((<span style="color:red">?:</span>[1-9])(<span style="color:red">?:</span>[1-9])(<span style="color:red">?:</span>[1-9])(<span style="color:red">?:</span>[1-9])(<span style="color:red">?:</span>[1-9]))
 
-### Features That Let You Chill:
-
-- **Semiauto-Linking Magic:** Forget manual linking. Rightclick, let the regex patterns do the heavy lifting.
-- **Chillax with Organization:** Watch your notes find their buddies, automagically.
-- **Customizable Patterns:** Your rules, your regex. Tailor them to fit your groove.
-- **Smooth Obsidian Ride:** Like butter on a hot skillet, it integrates seamlessly.
-- **Fun with Regex:** Not just powerful, but also a playground for your regex skills.
-
-### Why Should You R.E.L.A.X.?
-
-Embrace a workflow that's as chilled out as a lazy Sunday afternoon. Discover connections in your notes that you didn’t even know existed. Let your creative juices flow uninterrupted while R.E.L.A.X. takes care of the mundane.
-
-### Get Started:
-
-1. **Install:** Plug it into Obsidian with zero hassles.
-2. **Set Your Regex:** Dial in your preferences.
-3. **Watch the Magic:** Update inside your selection, or the whole file or even whole folders recursively. Rightclick->There you go!
-
-## Installation:
-
 1. **Access Obsidian Settings:** Open your Obsidian application and click on the 'Settings' icon.
 2. **Enable Community Plugins:** In the Settings, navigate to 'Community Plugins' and turn off 'Restricted Mode'.
 3. **Browse and Install Plugins:** Click on 'Browse' and find the R.E.L.A.X. plugin.
 4. **Install the Plugin:** Click 'Install' on the plugin’s page.
 5. **Enable the Plugin:** Toggle it on in the 'Installed plugins' section.
 6. **Configure the Plugin (Optional):** Set up the plugin in its settings panel.
-7. **Start Using the Plugin:** Begin your seamless Obsidian experience.
+7. **Start Using the Plugin:** Righclick>R.E.L.A.X. or use the command panel. All your Regex-findings will be turnted into links!
 
 ## Screenshots:
 <img src="Screenshot_1.PNG" alt="R.E.L.A.X Screenshot">
