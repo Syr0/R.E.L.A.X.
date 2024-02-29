@@ -100,7 +100,7 @@ var DEFAULT_SETTINGS = {
 				{
 					"isActive": true,
 					"key": "Tor Onion Address",
-					"regex": "(?:https?://)?(?:www)?(\\S*?\\.onion)\\b)"
+					"regex": "\\b((?:https?:\\/\\/)?(?:www)?(\\S*?\\.onion)\\b)"
 				},
 				{
 					"isActive": true,
@@ -115,7 +115,7 @@ var DEFAULT_SETTINGS = {
 				{
 					"isActive": true,
 					"key": "VT subitter",
-					"regex": "([0-9a-f]{8} - (?:api|web)"
+					"regex": "([0-9a-f]{8} - (?:api|web))"
 				},
 				{
 					"isActive": true,
