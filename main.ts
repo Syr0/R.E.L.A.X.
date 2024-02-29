@@ -13,6 +13,7 @@ interface RelaxPluginSettings {
 	ignoreURLs?: boolean;
 	defangURLs?: boolean;
 	ignoreCodeBlocks?: boolean;
+	blacklist: string[];
 }
 
 var DEFAULT_SETTINGS = {
@@ -233,7 +234,8 @@ var DEFAULT_SETTINGS = {
 	ignoreLinks: true,
 	ignoreCodeBlocks: true,
 	defangURLs: true,
-	ignoreURLs: false
+	ignoreURLs: false,
+	blacklist: []
 };
 
 class RelaxSettingTab extends PluginSettingTab {
@@ -768,7 +770,34 @@ class RelaxSettingTab extends PluginSettingTab {
 			this.plugin.settings.regexPairs.forEach(pair => this.addStandaloneRegexUI(pair));
 		}
 
+		this.renderBlacklistUI(containerEl)
 
+	}
+	private renderBlacklistUI(containerEl: HTMLElement) {
+		containerEl.createEl('h3', {text: 'Blacklist Management'});
+		containerEl.createEl('p', {text: 'Enter items to blacklist. These items will not be processed.'});
+
+		const blacklistContainer = containerEl.createDiv();
+		this.plugin.settings.blacklist.forEach((item, index) => {
+			const itemDiv = blacklistContainer.createDiv();
+			itemDiv.textContent = item;
+
+			const removeButton = itemDiv.createEl('button', {text: 'Remove'});
+			removeButton.onclick = () => {
+				this.plugin.settings.blacklist.splice(index, 1);
+				this.plugin.saveSettings().then(() => this.display());
+			};
+		});
+
+		const addItemInput = containerEl.createEl('input', {type: 'text'});
+		const addItemButton = containerEl.createEl('button', {text: 'Add to Blacklist'});
+		addItemButton.onclick = () => {
+			if (addItemInput.value && !this.plugin.settings.blacklist.includes(addItemInput.value)) {
+				this.plugin.settings.blacklist.push(addItemInput.value);
+				addItemInput.value = '';
+				this.plugin.saveSettings().then(() => this.display());
+			}
+		};
 	}
 
 	createSettingsUI(containerEl) {
@@ -1023,7 +1052,30 @@ export default class RelaxPlugin extends Plugin {
 		await this.app.vault.modify(noteFile, updatedContent);
 	}
 
+	private renderBlacklistUI(containerEl: HTMLElement) {
+		const blacklistSection = containerEl.createEl('div');
+		blacklistSection.createEl('h3', { text: 'Blacklist' });
+		const listContainer = blacklistSection.createEl('div');
 
+		this.plugin.settings.blacklist.forEach((item, index) => {
+			const itemEl = listContainer.createEl('div');
+			itemEl.createEl('span', { text: item });
+			const removeButton = itemEl.createEl('button', { text: 'Remove' });
+			removeButton.onclick = () => {
+				this.plugin.settings.blacklist.splice(index, 1);
+				this.plugin.saveSettings().then(() => this.display());
+			};
+		});
+
+		const addItemInput = blacklistSection.createEl('input', { type: 'text' });
+		const addItemButton = blacklistSection.createEl('button', { text: 'Add' });
+		addItemButton.onclick = () => {
+			if (addItemInput.value) {
+				this.plugin.settings.blacklist.push(addItemInput.value);
+				this.plugin.saveSettings().then(() => this.display());
+			}
+		};
+	}
 	updateSelection(content: string, settings: RelaxPluginSettings): string {
 		const urlRegex = /(https?:\/\/[^\s]+)/g;
 		const excludedExtensions = /\.(exe|lnk|xls|md|sh|elf|bin|tmp|doc|odt|docx|pdf|yara|dll|txt)$/;
@@ -1074,7 +1126,9 @@ export default class RelaxPlugin extends Plugin {
 					modifiedLine = modifiedLine.replace(compiledRegex, (match, ...args) => {
 						const groups = args.slice(0, -2).filter(g => g !== undefined);
 						const capturedValue = groups[0];
-
+						if (settings.blacklist.includes(match)) {
+							return match;
+						}
 						if (!capturedValue) return match;
 
 						if (settings.ignoreLinks && containsValidLink(line, capturedValue)) {
