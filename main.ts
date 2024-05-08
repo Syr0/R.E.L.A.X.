@@ -1018,7 +1018,6 @@ export default class RelaxPlugin extends Plugin {
 
 	async addBracketsForFile(noteFilePath = "") {
 		await this.processFileContent(noteFilePath, (content) => this.updateSelection(content, this.settings));
-		new Notice(`File processed.`);
 	}
 
 	async removeBracketsinFile(noteFilePath = "") {
