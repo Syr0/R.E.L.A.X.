@@ -235,7 +235,33 @@ var DEFAULT_SETTINGS = {
 	ignoreCodeBlocks: true,
 	defangURLs: true,
 	ignoreURLs: false,
-	blacklist: []
+	blacklist: [
+		"github.com",
+		"127.0.0.1",
+		"microsoft.com",
+		"www.youtube.com",
+		"youtube.com",
+		"www.microsoft.com",
+		"www.github.com",
+		"medium.com",
+		"www.medium.com",
+		"white",
+		"windows",
+		"kaspersky.com",
+		"gmail.com",
+		"domain.com",
+		"www.fireeye.com",
+		"researchcenter.paloaltonetworks.com",
+		"www.symantec.com",
+		"www.virustotal.com",
+		"www.trendmicro.com",
+		"virustotal.com",
+		"www.Sophos.com",
+		"www.mcafee.com",
+		"\\Users\\User\\",
+		"twitter.com",
+		"nytimes.com"
+	]
 };
 
 class RelaxSettingTab extends PluginSettingTab {
@@ -940,6 +966,11 @@ export default class RelaxPlugin extends Plugin {
 
 		this.addSettingTab(this._settingTabReference);
 		this.addCommand({id: "relax", name: "R.E.L.A.X.", callback: () => this.addBrackets()});
+		this.addCommand({
+			id: "relax-add-to-blacklist",
+			name: "RELAX: Add to blacklist",
+			callback: () => this.addToBlacklist()
+		});
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
 				menu.addItem((item) => {
@@ -968,10 +999,22 @@ export default class RelaxPlugin extends Plugin {
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
 				menu.addItem((item) => {
 					item
-						.setTitle("Remove all brackets")
+						.setTitle("RELAX: Remove all brackets")
 						.setIcon("curly-braces")
 						.onClick(async () => {
 							this.removeBrackets();
+						});
+				});
+			})
+		);
+		this.registerEvent(
+			this.app.workspace.on("editor-menu", (menu, file) => {
+				menu.addItem((item) => {
+					item
+						.setTitle("RELAX: blacklist selected links")
+						.setIcon("curly-braces")
+						.onClick(async () => {
+							this.addToBlacklist();
 						});
 				});
 			})
@@ -1303,4 +1346,35 @@ export default class RelaxPlugin extends Plugin {
 		new Notice(`All ${totalFiles} files in the folder processed.`);
 	}
 
+	async addToBlacklist() {
+		const activeLeaf = this.app.workspace.activeLeaf;
+
+		if (!activeLeaf || !activeLeaf.view) {
+			new Notice("Please open a markdown file or select a folder");
+			return;
+		}
+
+		if (activeLeaf.view instanceof MarkdownView) {
+			const editor = activeLeaf.view.editor;
+			const selection = editor.getSelection();
+
+			if (selection && selection.trim().length !== 0) {
+				const links = selection.match(/\[\[([^\]]+)\]\]/g);
+
+				if (links) {
+					links.forEach(link => {
+						const text = link.replace(/\[\[|\]\]/g, '');
+						if (!this.settings.blacklist.includes(text)) {
+							this.settings.blacklist.push(text);
+						}
+					});
+					await this.saveSettings();
+					new Notice("Added to blacklist!");
+					return;
+				}
+			}
+		}
+
+		new Notice("No valid selection found. Please select a valid link.");
+	}
 }
