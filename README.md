@@ -47,8 +47,9 @@ Because it is unclear which group to link. To cause a group not to capture, writ
 7. **Start Using the Plugin:** Righclick>R.E.L.A.X. or use the command panel. All your Regex-findings will be turnted into links!
 
 ## Demo Video
-
-[![Youtube R.E.L.A.X. Demonstration](Logo.png)](https://www.youtube.com/watch?v=SoRKFwc-UJw)
+<p align="center">
+[![Youtube R.E.L.A.X. Demonstration]([Logo.png](http://i3.ytimg.com/vi/SoRKFwc-UJw/hqdefault.jpg))](https://www.youtube.com/watch?v=SoRKFwc-UJw)
+</p>
 ### Community & Support:
 
 - **Forums & Discord:** Chill with fellow users on [Obsidian Forums](#) and [Discord](#).
