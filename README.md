@@ -47,10 +47,11 @@ Because it is unclear which group to link. To cause a group not to capture, writ
 7. **Start Using the Plugin:** Righclick>R.E.L.A.X. or use the command panel. All your Regex-findings will be turnted into links!
 
 ## Demo Video
-<p align="center">
-	[![Youtube R.E.L.A.X. Demonstration](https://upload.wikimedia.org/wikipedia/commons/3/3f/YOUTUBE--SOCIAL-PLAY.png)](http://www.youtube.com/watch?v=SoRKFwc-UJw)
-	
-</p>
+
+
+[![Youtube R.E.L.A.X. Demonstration](https://upload.wikimedia.org/wikipedia/commons/3/3f/YOUTUBE--SOCIAL-PLAY.png)](http://www.youtube.com/watch?v=SoRKFwc-UJw)
+
+
 ### Community & Support:
 
 - **Forums & Discord:** Chill with fellow users on [Obsidian Forums](#) and [Discord](#).
