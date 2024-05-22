@@ -48,7 +48,7 @@ Because it is unclear which group to link. To cause a group not to capture, writ
 
 ## Demo Video
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/SoRKFwc-UJ/0.jpg)](https://www.youtube.com/watch?v=SoRKFwc-UJw)
+[![Youtube R.E.L.A.X. Demonstration](Logo.png)](https://www.youtube.com/watch?v=SoRKFwc-UJw)
 ### Community & Support:
 
 - **Forums & Discord:** Chill with fellow users on [Obsidian Forums](#) and [Discord](#).
