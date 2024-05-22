@@ -48,7 +48,7 @@ Because it is unclear which group to link. To cause a group not to capture, writ
 
 ## Demo Video
 <p align="center">
-	[![Youtube R.E.L.A.X. Demonstration](http://img.youtube.com/vi/SoRKFwc-UJw/0.jpg)](http://www.youtube.com/watch?v=SoRKFwc-UJw)
+	[![Youtube R.E.L.A.X. Demonstration](https://upload.wikimedia.org/wikipedia/commons/3/3f/YOUTUBE--SOCIAL-PLAY.png)](http://www.youtube.com/watch?v=SoRKFwc-UJw)
 	
 </p>
 ### Community & Support:
