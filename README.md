@@ -18,6 +18,7 @@ Enhance your Obsidian experience with R.E.L.A.X., a powerful regex plugin that l
 - **Rightclick, click "R.E.L.A.X.". This will put all the Information found via predefined regex into brackets, linking your files.
 - **Open Settings and set up your own custom Regular Expression. Note: Each RegEx should have exactly one catching group.
 
+
 ## Example: ##
 
 **Regular Expression for Digits:**
@@ -45,11 +46,9 @@ Because it is unclear which group to link. To cause a group not to capture, writ
 6. **Configure the Plugin (Optional):** Set up the plugin in its settings panel.
 7. **Start Using the Plugin:** Righclick>R.E.L.A.X. or use the command panel. All your Regex-findings will be turnted into links!
 
-## Screenshots:
-<img src="Screenshot_1.PNG" alt="R.E.L.A.X Screenshot">
-<img src="Screenshot_2.bmp" alt="R.E.L.A.X Screenshot">
-<img src="Screenshot_3.bmp" alt="R.E.L.A.X Screenshot">
+## Demo Video
 
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/SoRKFwc-UJ/0.jpg)](https://www.youtube.com/watch?v=SoRKFwc-UJw)
 ### Community & Support:
 
 - **Forums & Discord:** Chill with fellow users on [Obsidian Forums](#) and [Discord](#).
