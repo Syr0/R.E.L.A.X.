@@ -1,7 +1,7 @@
 {
 	"id": "relax",
 	"name": "R.E.L.A.X.",
-	"version": "1.5.6",
+	"version": "1.5.7",
 	"minAppVersion": "1.1.0",
 	"description": "Multi-regex management for data linking and batch processing across selection, files and folders. Ideal for academics, data scientists, forensics, reverse-engineerer and knowledge workers. Enables dynamic data organization and can be used to standardize links or as text-search. Streamline note-taking, data analysis, and report generation with intuitive regex pattern application and modification.",
 	"author": "Syr",
