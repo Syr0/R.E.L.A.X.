@@ -2,13 +2,12 @@
   <img src="Logo.png" alt="R.E.L.A.X Logo">
   <h1 align="center">R.E.L.A.X. (Regular Expression Link Analysis Xpert)
   <br>
-  <a href="#"><img src="https://img.shields.io/badge/Version-1.5.6-blue"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Version-1.5.7-blue"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-MIT-orange"></a>
   <a href="#"><img src="https://img.shields.io/badge/Support-Weekly-brightgreen"></a>
   <a href="#"><img src="https://img.shields.io/badge/KnownBugs-0-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/Stable-green"></a>
-  <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-1-pink"></a>
-  <a href="#"><img src="https://img.shields.io/badge/ChatGPT-Approved-red"></a></h1>
+  <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-0-pink"></a>
 	</p>
 
 
