@@ -4,7 +4,7 @@
   <br>
   <a href="#"><img src="https://img.shields.io/badge/Version-1.5.7-blue"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-MIT-orange"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Support-Weekly-brightgreen"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Support-Annual-brightgreen"></a>
   <a href="#"><img src="https://img.shields.io/badge/KnownBugs-0-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/Stable-green"></a>
   <a href="#"><img src="https://img.shields.io/badge/PlannedImprovements-0-pink"></a>
