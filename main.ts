@@ -437,6 +437,16 @@ class RelaxSettingTab extends PluginSettingTab {
 		super(app, plugin);
 		this.plugin = plugin;
 		this.debouncedSave = debounce(() => this.updateRegexOrderFromDOM(), 300);
+
+		document.addEventListener('mousemove', (e) => {
+			if (!this.isResizing || !this.keyValueContainer) return;
+			const rect = this.keyValueContainer.getBoundingClientRect();
+			let percentage = ((e.clientX - rect.left) / rect.width) * 100;
+			percentage = Math.max(10, Math.min(percentage, 90));
+			this.keyValueContainer.style.setProperty('--key-width', `${percentage}%`);
+		});
+
+		document.addEventListener('mouseup', () => this.isResizing = false);
 	}
 
 	t(key: string): string {
@@ -673,16 +683,6 @@ class RelaxSettingTab extends PluginSettingTab {
 				}
 			}
 		});
-
-		document.addEventListener('mousemove', (e) => {
-			if (!this.isResizing) return;
-			const rect = this.keyValueContainer.getBoundingClientRect();
-			let percentage = ((e.clientX - rect.left) / rect.width) * 100;
-			percentage = Math.max(10, Math.min(percentage, 90));
-			this.keyValueContainer.style.setProperty('--key-width', `${percentage}%`);
-		});
-
-		document.addEventListener('mouseup', () => this.isResizing = false);
 
 		this.createSettingsUI(containerEl);
 
@@ -925,13 +925,37 @@ export default class RelaxPlugin extends Plugin {
 		await this.saveSettings();
 	}
 
+	compiledRegexes: RegExp[] = [];
+	blacklistSet: Set<string> = new Set();
+
 	async loadSettings() {
 		const loadedSettings = await this.loadData();
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedSettings || {});
+		this.updateCaches();
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		this.updateCaches();
+	}
+
+	updateCaches() {
+		this.blacklistSet = new Set(this.settings.blacklist);
+		this.compiledRegexes = [];
+		const extractRegexes = (nodes: RegexNode[]) => {
+			if (!nodes) return;
+			nodes.forEach(node => {
+				if (node.isActive) {
+					if (node.type === 'group' && node.items) extractRegexes(node.items);
+					else if (node.type === 'regex' && node.regex) {
+						try {
+							this.compiledRegexes.push(new RegExp(node.regex, "g"));
+						} catch (e) {}
+					}
+				}
+			});
+		};
+		extractRegexes(this.settings.regexItems || []);
 	}
 
 	removeBracketsInSelection(content: string, sourcePath: string = ""): string {
@@ -1006,32 +1030,18 @@ export default class RelaxPlugin extends Plugin {
 			content = content.replace(/\[\.\]|\[\:\]/g, char => fangMap[char]);
 		}
 
-		const activeRegexes: string[] = [];
-		const extractRegexes = (nodes: RegexNode[]) => {
-			if (!nodes) return;
-			nodes.forEach(node => {
-				if (node.isActive) {
-					if (node.type === 'group' && node.items) extractRegexes(node.items);
-					else if (node.type === 'regex' && node.regex) activeRegexes.push(node.regex);
-				}
+		this.compiledRegexes.forEach(compiledRegex => {
+			content = content.replace(compiledRegex, (match, ...args) => {
+				const offset = args[args.length - 2];
+				const wholeString = args[args.length - 1];
+
+				if (offset > 0 && wholeString[offset - 1] === '\\') return match;
+
+				const target = (args.length > 2 && args[0] !== undefined) ? args[0] : match;
+				if (this.blacklistSet.has(target)) return match;
+
+				return match.replace(target, `[[${target}]]`);
 			});
-		};
-		extractRegexes(settings.regexItems || []);
-		activeRegexes.forEach(regexStr => {
-			try {
-				const compiledRegex = new RegExp(regexStr, "g");
-				content = content.replace(compiledRegex, (match, ...args) => {
-					const offset = args[args.length - 2];
-					const wholeString = args[args.length - 1];
-
-					if (offset > 0 && wholeString[offset - 1] === '\\') return match;
-
-					const target = (args.length > 2 && args[0] !== undefined) ? args[0] : match;
-					if (settings.blacklist.includes(target)) return match;
-
-					return match.replace(target, `[[${target}]]`);
-				});
-			} catch (e) {}
 		});
 
 		if (settings.ignoreURLs) {
@@ -1109,9 +1119,7 @@ export default class RelaxPlugin extends Plugin {
 
 	async addBracketsForFolder(folderPath: string) {
 		const files = this.app.vault.getMarkdownFiles().filter(file => file.path.startsWith(folderPath));
-		for (let i = 0; i < files.length; i++) {
-			await this.addBracketsForFile(files[i].path);
-		}
+		await Promise.all(files.map(file => this.addBracketsForFile(file.path)));
 	}
 
 	async addToBlacklist() {
